@@ -26,12 +26,14 @@ set(STM_DRIVERS_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/core/system_stm32f4xx.c
     ${CMAKE_CURRENT_SOURCE_DIR}/stm32f4xx-hal-driver/Src/stm32f4xx_ll_gpio.c
     ${CMAKE_CURRENT_SOURCE_DIR}/stm32f4xx-hal-driver/Src/stm32f4xx_ll_rcc.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/stm32f4xx-hal-driver/Src/stm32f4xx_ll_tim.c
     ${CMAKE_CURRENT_SOURCE_DIR}/stm32f4xx-hal-driver/Src/stm32f4xx_ll_utils.c
     ${CMAKE_CURRENT_SOURCE_DIR}/stm32f4xx-hal-driver/Src/stm32f4xx_ll_exti.c
 )
 
 set(STM_APPLICATION_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/core/gpio.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/core/timer.c
     ${CMAKE_CURRENT_SOURCE_DIR}/core/stm32f4xx_it.c
     ${CMAKE_CURRENT_SOURCE_DIR}/core/sysmem.c
     ${CMAKE_CURRENT_SOURCE_DIR}/core/syscalls.c
@@ -51,7 +53,7 @@ set(SOURCES_APPLICATION
 
 add_executable(TemperatureTaker ${SOURCES_APPLICATION} ${STM_APPLICATION_SRC})
 target_link_libraries(TemperatureTaker PRIVATE stm_drivers)
-target_compile_options(TemperatureTaker PRIVATE "-save-temps" "-fno-exceptions")
+target_compile_options(TemperatureTaker PRIVATE "-save-temps" "-fno-exceptions" "-g")
 target_compile_options(TemperatureTaker PRIVATE "-ffunction-sections" "-fdata-sections")
 target_link_options(TemperatureTaker PRIVATE "-Wl,--gc-sections" "-Wl,--print-gc-sections")
 target_link_options(TemperatureTaker PUBLIC -T${CMAKE_SOURCE_DIR}/stm32f411.ld)

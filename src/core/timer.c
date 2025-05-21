@@ -1,6 +1,9 @@
 #include "timer.h"
 
-void MX_TIMER_Init()
+#include "stm32f4xx_ll_bus.h"
+#include "stm32f4xx_ll_tim.h"
+
+int MX_TIMER_Init()
 {
     LL_TIM_InitTypeDef tim_conf;
     /* init the structure */
@@ -9,13 +12,21 @@ void MX_TIMER_Init()
     /* Timer Clock Enable */
     LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM2);
 
-    //TODO: this has to contain the value to count to 1 us.
-    tim_conf.Autoreload = ;
+    /* this is 1 us with 16 Mhz clock */
+    tim_conf.Autoreload = 16;
 
     ErrorStatus status = LL_TIM_Init(TIM2, &tim_conf);
 
-    if (status == SUCCESS)
-    {
-    }
+    return status;
+}
+
+void sleepUs(int us) {
+   LL_TIM_SetAutoReload(TIM2, us * 16);
+   LL_TIM_EnableCounter(TIM2);
+
+   while (LL_TIM_IsActiveFlag_UPDATE(TIM2) != 1) {
+   }
+
+   LL_TIM_DisableCounter(TIM2);
 }
 

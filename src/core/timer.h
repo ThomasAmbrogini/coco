@@ -5,9 +5,8 @@
 extern "C" {
 #endif
 
-#include "stm32f4xx_ll_tim.h"
-
-void MX_TIMER_Init(void);
+int MX_TIMER_Init(void);
+void sleepUs(int us);
 
 #ifdef __cplusplus
 }

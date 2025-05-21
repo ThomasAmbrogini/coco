@@ -1,44 +1,51 @@
 #include "common.h"
 #include "gpio.h"
+#include "timer.h"
 
 void SystemClock_Config(void);
 
 int main() {
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SYSCFG);
-  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_PWR);
+    /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+    LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SYSCFG);
+    LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_PWR);
 
-  /* System interrupt init*/
-  NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
+    /* System interrupt init*/
+    NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
 
-  /* SysTick_IRQn interrupt configuration */
-  NVIC_SetPriority(SysTick_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),15, 0));
+    /* SysTick_IRQn interrupt configuration */
+    NVIC_SetPriority(SysTick_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),15, 0));
 
-  /* Configure the system clock */
-  SystemClock_Config();
+    /* Configure the system clock */
+    SystemClock_Config();
 
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
+    /* Initialize all configured peripherals */
+    MX_GPIO_Init();
 
-  while (true)
-  {
-  }
+    int ret = MX_TIMER_Init();
+
+    LL_GPIO_SetOutputPin(GPIOA, LL_GPIO_PIN_2);
+    sleepUs(30);
+    LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_2);
+
+    while (true)
+    {
+    }
 }
 
 /**
   * @brief Timer configuration for us delays.
   * @retval None
   */
-void uSTimerConfig(void)
-{
-    init1usTick(16000000);
-    LL_RCC_SetTIMPrescaler(LL_RCC_TIM_PRESCALER_TWICE);
-}
-
-void init1usTick(uint32_t clock_frequency_hz)
-{
-    initTick(clock_frequency_hz, 1000000);
-}
+//void uSTimerConfig(void)
+//{
+//    init1usTick(16000000);
+//    LL_RCC_SetTIMPrescaler(LL_RCC_TIM_PRESCALER_TWICE);
+//}
+//
+//void init1usTick(uint32_t clock_frequency_hz)
+//{
+//    initTick(clock_frequency_hz, 1000000);
+//}
 
 void initTick(uint32_t clock_frequency_hz, uint32_t ticks)
 {
