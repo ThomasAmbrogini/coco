@@ -23,10 +23,12 @@ int MX_TIMER_Init()
 void sleepUs(int us) {
    LL_TIM_SetAutoReload(TIM2, us * 16);
    LL_TIM_EnableCounter(TIM2);
+   LL_TIM_ClearFlag_UPDATE(TIM2);
 
    while (LL_TIM_IsActiveFlag_UPDATE(TIM2) != 1) {
    }
 
+   LL_TIM_ClearFlag_UPDATE(TIM2);
    LL_TIM_DisableCounter(TIM2);
 }
 

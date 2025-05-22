@@ -23,9 +23,12 @@ int main() {
 
     int ret = MX_TIMER_Init();
 
-    LL_GPIO_SetOutputPin(GPIOA, LL_GPIO_PIN_2);
-    sleepUs(30);
-    LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_2);
+    if (ret == 0)
+    {
+        LL_GPIO_SetOutputPin(GPIOA, LL_GPIO_PIN_2);
+        sleepUs(30);
+        LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_2);
+    }
 
     while (true)
     {
