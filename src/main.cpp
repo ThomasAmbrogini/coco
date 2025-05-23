@@ -1,5 +1,6 @@
 #include "common.h"
 #include "gpio.h"
+#include "temperature_humidity_sensor.h"
 #include "timer.h"
 
 void SystemClock_Config(void);
@@ -22,6 +23,8 @@ int main() {
     MX_GPIO_Init();
 
     int ret = MX_TIMER_Init();
+    sleepUs(1);
+    sleepUs(1);
 
     if (ret == 0)
     {
@@ -30,34 +33,11 @@ int main() {
         LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_2);
     }
 
+    temp::read();
+
     while (true)
     {
     }
-}
-
-/**
-  * @brief Timer configuration for us delays.
-  * @retval None
-  */
-//void uSTimerConfig(void)
-//{
-//    init1usTick(16000000);
-//    LL_RCC_SetTIMPrescaler(LL_RCC_TIM_PRESCALER_TWICE);
-//}
-//
-//void init1usTick(uint32_t clock_frequency_hz)
-//{
-//    initTick(clock_frequency_hz, 1000000);
-//}
-
-void initTick(uint32_t clock_frequency_hz, uint32_t ticks)
-{
-    //TODO: change the systick to an actual timer.
-    /* Configure the SysTick to have interrupt in 1ms time base */
-    SysTick->LOAD  = (uint32_t)((clock_frequency_hz / ticks) - 1UL);  /* set reload register */
-    SysTick->VAL   = 0UL;                                       /* Load the SysTick Counter Value */
-    SysTick->CTRL  = SysTick_CTRL_CLKSOURCE_Msk |
-        SysTick_CTRL_ENABLE_Msk;                   /* Enable the Systick Timer */
 }
 
 /**

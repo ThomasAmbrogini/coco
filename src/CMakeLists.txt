@@ -51,6 +51,8 @@ set(SOURCES_APPLICATION
     ${CMAKE_CURRENT_SOURCE_DIR}/vector_table.cpp
 )
 
+add_subdirectory(temp_humidity_sensor)
+
 add_executable(TemperatureTaker ${SOURCES_APPLICATION} ${STM_APPLICATION_SRC})
 target_link_libraries(TemperatureTaker PRIVATE stm_drivers)
 target_compile_options(TemperatureTaker PRIVATE "-save-temps" "-fno-exceptions" "-g")
@@ -58,6 +60,5 @@ target_compile_options(TemperatureTaker PRIVATE "-ffunction-sections" "-fdata-se
 target_link_options(TemperatureTaker PRIVATE "-Wl,--gc-sections" "-Wl,--print-gc-sections")
 target_link_options(TemperatureTaker PUBLIC -T${CMAKE_SOURCE_DIR}/stm32f411.ld)
 target_link_libraries(TemperatureTaker PRIVATE gcc)
-
-add_subdirectory(temp_humidity_sensor)
+target_link_libraries(TemperatureTaker PRIVATE temp_humidity)
 
