@@ -17,18 +17,27 @@ int MX_TIMER_Init()
 
     ErrorStatus status = LL_TIM_Init(TIM2, &tim_conf);
 
+    LL_TIM_StructInit(&tim_conf);
+    tim_conf.Autoreload = 0xFFFFFFFF;
+    tim_conf.Prescaler = __LL_TIM_CALC_PSC(16000000, 1000000);
+    LL_TIM_Init(TIM5, &tim_conf);
+    LL_TIM_EnableCounter(TIM5);
+
     return status;
 }
 
 void sleepUs(int us) {
-   LL_TIM_SetAutoReload(TIM2, us * 16);
-   LL_TIM_EnableCounter(TIM2);
-   LL_TIM_ClearFlag_UPDATE(TIM2);
+    LL_TIM_SetAutoReload(TIM2, (us * 16) - 1);
+    LL_TIM_SetCounter(TIM2, 0);
+    LL_TIM_EnableCounter(TIM2);
+    LL_TIM_ClearFlag_UPDATE(TIM2);
 
-   while (LL_TIM_IsActiveFlag_UPDATE(TIM2) != 1) {
-   }
+    while (LL_TIM_IsActiveFlag_UPDATE(TIM2) != 1) {
+    }
 
-   LL_TIM_ClearFlag_UPDATE(TIM2);
-   LL_TIM_DisableCounter(TIM2);
+    LL_TIM_DisableCounter(TIM2);
 }
 
+uin32_t getCurrentUsTick(void) {
+    return LL_TIM_GetCounter(TIM5);
+}

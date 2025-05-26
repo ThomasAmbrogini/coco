@@ -22,16 +22,10 @@ int main() {
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
 
-    int ret = MX_TIMER_Init();
-    sleepUs(1);
-    sleepUs(1);
+    constexpr int start_delay_ms = 2000;
+    LL_mDelay(start_delay_ms);
 
-    if (ret == 0)
-    {
-        LL_GPIO_SetOutputPin(GPIOA, LL_GPIO_PIN_2);
-        sleepUs(30);
-        LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_2);
-    }
+    int ret = MX_TIMER_Init();
 
     temp::read();
 

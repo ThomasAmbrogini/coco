@@ -8,6 +8,8 @@ extern "C" {
 int MX_TIMER_Init(void);
 void sleepUs(int us);
 
+uin32_t getCurrentUsTick(void);
+
 #ifdef __cplusplus
 }
 #endif

@@ -21,7 +21,7 @@ void takeGpioAsOutput() {
   /**/
   GPIO_InitStruct.Pin = TEMPERATURE_HUMIDITY_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_UP;
   LL_GPIO_Init(TEMPERATURE_HUMIDITY_GPIO_Port, &GPIO_InitStruct);
@@ -44,8 +44,8 @@ int waitForLowLevel() {
     int elapsed_time_us = 0;
 
     while(LL_GPIO_IsInputPinSet(TEMPERATURE_HUMIDITY_GPIO_Port, TEMPERATURE_HUMIDITY_Pin)) {
-        sleepUs(10);
-        elapsed_time_us += 10;
+        sleepUs(1);
+        elapsed_time_us += 1;
     }
 
     return elapsed_time_us;
@@ -55,8 +55,8 @@ int timeHighLevel() {
     int elapsed_time_us = 0;
 
     while(LL_GPIO_IsInputPinSet(TEMPERATURE_HUMIDITY_GPIO_Port, TEMPERATURE_HUMIDITY_Pin)) {
-        sleepUs(10);
-        elapsed_time_us += 10;
+        sleepUs(1);
+        elapsed_time_us += 1;
     }
 
     return elapsed_time_us;
@@ -66,8 +66,8 @@ int timeLowLevel() {
     int elapsed_time_us = 0;
 
     while(!LL_GPIO_IsInputPinSet(TEMPERATURE_HUMIDITY_GPIO_Port, TEMPERATURE_HUMIDITY_Pin)) {
-        sleepUs(10);
-        elapsed_time_us += 10;
+        sleepUs(1);
+        elapsed_time_us += 1;
     }
 
     return elapsed_time_us;
@@ -75,16 +75,18 @@ int timeLowLevel() {
 
 void read() {
     constexpr int NUM_TOTAL_BITS = 5 * 8;
-    int buffer[NUM_TOTAL_BITS] = {0};
+    volatile int buffer[NUM_TOTAL_BITS] = {0};
 
     takeGpioAsOutput();
     LL_GPIO_ResetOutputPin(TEMPERATURE_HUMIDITY_GPIO_Port, TEMPERATURE_HUMIDITY_Pin);
+
     /* Start signal (line low) for at least 1 ms */
     /* maybe i can use the systick for this kind of delay */
-    constexpr int start_delay_ms = 2;
+    constexpr int start_delay_ms = 4;
     LL_mDelay(start_delay_ms);
 
     letGpioToSensor();
+
     /* Should be ~20-40 us */
     int elapsed_time_us_after_start = waitForLowLevel();
 
@@ -108,7 +110,7 @@ void read() {
          */
         int time_for_bit = timeHighLevel();
         int current_value = 0;
-        if (time_for_bit < 40) {
+        if (time_for_bit < 10) {
             current_value = 0;
         } else {
             current_value = 1;
@@ -118,10 +120,7 @@ void read() {
         ++count_bits;
     }
 
-    uint32_t temperature = 0;
-    for (int i = 15; i < 15 + 8; ++i) {
-        temperature |= buffer[i] << (i - 15);
-    }
+    buffer[0] = 0;
 }
 
 } /* namespace temp */
