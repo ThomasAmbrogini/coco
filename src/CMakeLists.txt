@@ -32,7 +32,7 @@ set(STM_DRIVERS_SRC
 )
 
 set(STM_APPLICATION_SRC
-    ${CMAKE_CURRENT_SOURCE_DIR}/core/gpio.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/core/gpio.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/core/timer.c
     ${CMAKE_CURRENT_SOURCE_DIR}/core/stm32f4xx_it.c
     ${CMAKE_CURRENT_SOURCE_DIR}/core/sysmem.c

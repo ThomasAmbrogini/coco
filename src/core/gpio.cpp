@@ -22,6 +22,10 @@
 #include "gpio.h"
 
 #include "common.h"
+#include "temperature_humidity_sensor.h"
+#include "timer.h"
+
+#include <stdbool.h>
 
 /* USER CODE BEGIN 0 */
 
@@ -52,13 +56,13 @@ void MX_GPIO_Init(void)
     GPIO_InitStruct.Mode = LL_GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = LL_GPIO_PULL_UP;
     LL_GPIO_Init(TEMPERATURE_HUMIDITY_GPIO_Port, &GPIO_InitStruct);
-    SYSCFG->EXTICR[0] &= ~SYSCFG_EXTICR1_EXTI0;
-    SYSCFG->EXTICR[0] |= SYSCFG_EXTICR1_EXTI0_PA;
-    NVIC_SetPriority(EXTI0_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 
-    uint32_t is_set = LL_GPIO_IsInputPinSet(TEMPERATURE_HUMIDITY_GPIO_Port,
-            TEMPERATURE_HUMIDITY_Pin);
+    SYSCFG->EXTICR[0] &= ~SYSCFG_EXTICR1_EXTI1;
+    SYSCFG->EXTICR[0] |= SYSCFG_EXTICR1_EXTI1_PA;
+    EXTI->RTSR |= EXTI_RTSR_TR1;
+    EXTI->FTSR |= EXTI_FTSR_TR1;
+    NVIC_SetPriority(EXTI1_IRQn, 0);
+    NVIC_EnableIRQ(EXTI1_IRQn);
 
     LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_2);
     GPIO_InitStruct.Pin = LL_GPIO_PIN_2;
@@ -70,9 +74,14 @@ void MX_GPIO_Init(void)
 
 }
 
-void EXTI0_IRQHandler(void)
+void EXTI1_IRQHandler(void)
 {
-    
+    uint32_t current_us = getCurrentUsTick();
+
+    /* I have to be awaken on both rising and falling edge of the gpio. */
+    bool gpio_value = LL_GPIO_IsOutputPinSet(GPIOA, LL_GPIO_PIN_1);
+
+    temp::advanceStateMachine(gpio_value, current_us);
 }
 
 /* USER CODE BEGIN 2 */

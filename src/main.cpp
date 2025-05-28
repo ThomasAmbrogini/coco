@@ -19,13 +19,10 @@ int main() {
     /* Configure the system clock */
     SystemClock_Config();
 
+    int ret = MX_TIMER_Init();
+
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
-
-    constexpr int start_delay_ms = 2000;
-    LL_mDelay(start_delay_ms);
-
-    int ret = MX_TIMER_Init();
 
     temp::read();
 

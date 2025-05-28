@@ -38,6 +38,6 @@ void sleepUs(int us) {
     LL_TIM_DisableCounter(TIM2);
 }
 
-uin32_t getCurrentUsTick(void) {
+uint32_t getCurrentUsTick(void) {
     return LL_TIM_GetCounter(TIM5);
 }

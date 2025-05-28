@@ -1,6 +1,8 @@
 #ifndef __TEMPERATURE_SENSOR_TIMER_H__
 #define __TEMPERATURE_SENSOR_TIMER_H__
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -8,7 +10,7 @@ extern "C" {
 int MX_TIMER_Init(void);
 void sleepUs(int us);
 
-uin32_t getCurrentUsTick(void);
+uint32_t getCurrentUsTick(void);
 
 #ifdef __cplusplus
 }
