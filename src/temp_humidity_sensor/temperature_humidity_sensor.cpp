@@ -9,7 +9,7 @@
 namespace temp {
 
 typedef enum {
-    WAITING_START,
+    WAITING_START = 0,
     START_HIGH,
     START_INFO_COMMUNICATION,
     WAIT_DATA,
@@ -43,18 +43,17 @@ void letGpioToSensor() {
     /**/
     LL_GPIO_ResetOutputPin(TEMPERATURE_HUMIDITY_GPIO_Port, TEMPERATURE_HUMIDITY_Pin);
 
-    /**/
     GPIO_InitStruct.Pin = TEMPERATURE_HUMIDITY_Pin;
     GPIO_InitStruct.Mode = LL_GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = LL_GPIO_PULL_UP;
+//    SYSCFG->EXTICR[0] &= ~SYSCFG_EXTICR1_EXTI1;
+//    SYSCFG->EXTICR[0] |= SYSCFG_EXTICR1_EXTI1_PA;
+//    NVIC_SetPriority(EXTI1_IRQn, 0);
+//    NVIC_EnableIRQ(EXTI1_IRQn);
+//    LL_EXTI_EnableRisingTrig_0_31(LL_EXTI_LINE_1);
+//    LL_EXTI_EnableFallingTrig_0_31(LL_EXTI_LINE_1);
+//    LL_EXTI_EnableIT_0_31(LL_EXTI_LINE_1);
     LL_GPIO_Init(TEMPERATURE_HUMIDITY_GPIO_Port, &GPIO_InitStruct);
-
-    SYSCFG->EXTICR[0] &= ~SYSCFG_EXTICR1_EXTI1;
-    SYSCFG->EXTICR[0] |= SYSCFG_EXTICR1_EXTI1_PA;
-    EXTI->RTSR |= EXTI_RTSR_TR1;
-    EXTI->FTSR |= EXTI_FTSR_TR1;
-    NVIC_SetPriority(EXTI1_IRQn, 0);
-    NVIC_EnableIRQ(EXTI1_IRQn);
 }
 
 int waitForLowLevel() {
@@ -99,12 +98,15 @@ void read() {
 
     /* Start signal (line low) for at least 1 ms */
     /* maybe i can use the systick for this kind of delay */
-    constexpr int start_delay_ms = 2;
+    constexpr int start_delay_ms = 18;
     LL_mDelay(start_delay_ms);
 
+    restartUsTick();
     letGpioToSensor();
 
     /* Everything will be done in the EXTI1_IRQHandler */
+    /* Should be ~20-40 us */
+    //int elapsed_time_us_after_start = waitForLowLevel();
 
 //    /* Should be ~20-40 us */
 //    int elapsed_time_us_after_start = waitForLowLevel();
@@ -142,7 +144,50 @@ void read() {
 //    buffer[0] = 0;
 }
 
-static ReadStates state;
+bool dht22_read(volatile uint8_t data[5]) {
+    uint32_t start_time, delta;
+    int bit_idx = 0;
+
+    // 1. Send start signal
+    takeGpioAsOutput();
+    LL_GPIO_ResetOutputPin(TEMPERATURE_HUMIDITY_GPIO_Port, TEMPERATURE_HUMIDITY_Pin);
+    LL_mDelay(20);
+
+    letGpioToSensor();
+
+    // 2. Wait for sensor response
+    start_time = getCurrentUsTick();
+    while (LL_GPIO_IsInputPinSet(TEMPERATURE_HUMIDITY_GPIO_Port, TEMPERATURE_HUMIDITY_Pin)) {
+        if ((getCurrentUsTick() - start_time) > 100) return false; // Sensor should pull low
+    }
+
+    // 3. Wait for sensor to pull high
+    while (!LL_GPIO_IsInputPinSet(TEMPERATURE_HUMIDITY_GPIO_Port, TEMPERATURE_HUMIDITY_Pin));
+    // 4. Wait for sensor to pull low (start of first bit)
+    while (LL_GPIO_IsInputPinSet(TEMPERATURE_HUMIDITY_GPIO_Port, TEMPERATURE_HUMIDITY_Pin));
+
+    // 5. Read 40 bits
+    for (int i = 0; i < 40; ++i) {
+        // Wait for pin to go high
+        while (!LL_GPIO_IsInputPinSet(TEMPERATURE_HUMIDITY_GPIO_Port, TEMPERATURE_HUMIDITY_Pin));
+
+        start_time = getCurrentUsTick();
+        // Wait while pin stays high
+        while (LL_GPIO_IsInputPinSet(TEMPERATURE_HUMIDITY_GPIO_Port, TEMPERATURE_HUMIDITY_Pin));
+        delta = getCurrentUsTick() - start_time;
+
+        // If high signal > 40us → 1, else → 0
+        data[i / 8] <<= 1;
+        if (delta > 40)
+            data[i / 8] |= 1;
+    }
+
+    // 6. Checksum
+    uint8_t sum = data[0] + data[1] + data[2] + data[3];
+    return sum == data[4];
+}
+
+static ReadStates state = WAITING_START;
 static int start_operation_us = 0;
 bool hum_temp_buffer[40] = {0};
 int current_bit = 0;
@@ -173,7 +218,7 @@ void advanceStateMachine(bool value, uint32_t us) {
             {
                 int us_passed = us - start_operation_us;
 
-                if (us_passed >= 70 && us_passed <= 90)
+                if (us_passed >= 65 && us_passed <= 90)
                 {
                     state = START_INFO_COMMUNICATION;
                     start_operation_us = us;
@@ -231,6 +276,9 @@ void advanceStateMachine(bool value, uint32_t us) {
                 }
                 start_operation_us = us;
 
+                if (current_bit == 37) {
+                    int c{};
+                }
                 if (current_bit == 40)
                 {
                     state = WAITING_START;
@@ -247,7 +295,7 @@ void advanceStateMachine(bool value, uint32_t us) {
             else
             {
                 int us_passed = us - start_operation_us;
-                if (us_passed >= 40 && us_passed <= 60)
+                if (us_passed >= 20 && us_passed <= 60)
                 {
                     state = DECODE_DATA;
                     start_operation_us = us;

@@ -11,6 +11,7 @@ int MX_TIMER_Init(void);
 void sleepUs(int us);
 
 uint32_t getCurrentUsTick(void);
+uint32_t restartUsTick(void);
 
 #ifdef __cplusplus
 }

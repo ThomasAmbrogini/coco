@@ -11,6 +11,7 @@ namespace temp {
     void init();
     void read();
 
+    bool dht22_read(volatile uint8_t* data);
     void advanceStateMachine(bool value, uint32_t us);
 
 #ifdef __cplusplus

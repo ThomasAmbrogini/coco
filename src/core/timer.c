@@ -11,6 +11,7 @@ int MX_TIMER_Init()
 
     /* Timer Clock Enable */
     LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM2);
+    LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM5);
 
     /* this is 1 us with 16 Mhz clock */
     tim_conf.Autoreload = 16;
@@ -20,7 +21,7 @@ int MX_TIMER_Init()
     LL_TIM_StructInit(&tim_conf);
     tim_conf.Autoreload = 0xFFFFFFFF;
     tim_conf.Prescaler = __LL_TIM_CALC_PSC(16000000, 1000000);
-    LL_TIM_Init(TIM5, &tim_conf);
+    status = LL_TIM_Init(TIM5, &tim_conf);
     LL_TIM_EnableCounter(TIM5);
 
     return status;
@@ -40,4 +41,9 @@ void sleepUs(int us) {
 
 uint32_t getCurrentUsTick(void) {
     return LL_TIM_GetCounter(TIM5);
+}
+
+uint32_t restartUsTick(void) {
+    LL_TIM_SetCounter(TIM5, 0);
+    return 1;
 }

@@ -12,19 +12,22 @@ int main() {
 
     /* System interrupt init*/
     NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
-
     /* SysTick_IRQn interrupt configuration */
     NVIC_SetPriority(SysTick_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),15, 0));
 
     /* Configure the system clock */
     SystemClock_Config();
 
+    constexpr int start_delay_ms = 1000;
+    LL_mDelay(start_delay_ms);
+
     int ret = MX_TIMER_Init();
 
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
-
-    temp::read();
+    volatile uint8_t data[5] = {0};
+    temp::dht22_read(data);
+//    temp::read();
 
     while (true)
     {

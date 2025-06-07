@@ -27,27 +27,14 @@
 
 #include <stdbool.h>
 
-/* USER CODE BEGIN 0 */
-
-/* USER CODE END 0 */
-
-/*----------------------------------------------------------------------------*/
-/* Configure GPIO                                                             */
-/*----------------------------------------------------------------------------*/
-/* USER CODE BEGIN 1 */
-
-/* USER CODE END 1 */
-
 /** Configure pins
 */
 void MX_GPIO_Init(void)
 {
-
     LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
 
     /* GPIO Ports Clock Enable */
     LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOA);
-
     /**/
     LL_GPIO_ResetOutputPin(TEMPERATURE_HUMIDITY_GPIO_Port, TEMPERATURE_HUMIDITY_Pin);
 
@@ -57,33 +44,54 @@ void MX_GPIO_Init(void)
     GPIO_InitStruct.Pull = LL_GPIO_PULL_UP;
     LL_GPIO_Init(TEMPERATURE_HUMIDITY_GPIO_Port, &GPIO_InitStruct);
 
-    SYSCFG->EXTICR[0] &= ~SYSCFG_EXTICR1_EXTI1;
-    SYSCFG->EXTICR[0] |= SYSCFG_EXTICR1_EXTI1_PA;
-    EXTI->RTSR |= EXTI_RTSR_TR1;
-    EXTI->FTSR |= EXTI_FTSR_TR1;
-    NVIC_SetPriority(EXTI1_IRQn, 0);
-    NVIC_EnableIRQ(EXTI1_IRQn);
-
     LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_2);
     GPIO_InitStruct.Pin = LL_GPIO_PIN_2;
     GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
     GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
     GPIO_InitStruct.Pull = LL_GPIO_PULL_DOWN;
-    LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
 }
 
-void EXTI1_IRQHandler(void)
-{
-    uint32_t current_us = getCurrentUsTick();
+uint32_t falling_us_tick = 0;
+uint32_t rising_us_tick  = 0;
+uint32_t elapsed_us_tick = 0;
 
-    /* I have to be awaken on both rising and falling edge of the gpio. */
-    bool gpio_value = LL_GPIO_IsOutputPinSet(GPIOA, LL_GPIO_PIN_1);
+int num_rising_edges = 0;
+int num_falling_edges = 0;
 
-    temp::advanceStateMachine(gpio_value, current_us);
+int first_edge = 1;
+volatile int beauty_low[100] = {0};
+volatile int beauty_high[100] = {0};
+volatile int current_bit_low {};
+volatile int current_bit_high {};
+
+void __attribute__((used)) EXTI1_IRQHandler(void) {
+//    if (first_edge) {
+//        first_edge = false;
+//    } else {
+//        uint32_t current_us = getCurrentUsTick();
+//
+//        /* I have to be awaken on both rising and falling edge of the gpio. */
+//        bool gpio_value = LL_GPIO_IsInputPinSet(GPIOA, LL_GPIO_PIN_1);
+//
+//        if (gpio_value) {
+//            ++num_rising_edges;
+//        } else {
+//            ++num_falling_edges;
+//        }
+//
+//        temp::advanceStateMachine(gpio_value, current_us);
+//    }
+//
+//    LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_1);
+//
+    if (LL_GPIO_IsInputPinSet(GPIOA, LL_GPIO_PIN_1)) {
+        beauty_low[current_bit_low++] = getCurrentUsTick();
+    } else {
+        beauty_high[current_bit_high++] = getCurrentUsTick();
+    }
+
+    restartUsTick();
+    LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_1);
 }
 
-/* USER CODE BEGIN 2 */
-
-/* USER CODE END 2 */
