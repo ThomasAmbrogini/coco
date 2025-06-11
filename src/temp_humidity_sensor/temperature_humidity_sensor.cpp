@@ -37,7 +37,7 @@ void takeGpioAsOutput() {
   LL_GPIO_Init(TEMPERATURE_HUMIDITY_GPIO_Port, &GPIO_InitStruct);
 }
 
-void letGpioToSensor() {
+void letGpioToSensor(bool interrupt_mode) {
     LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
 
     /**/
@@ -46,13 +46,17 @@ void letGpioToSensor() {
     GPIO_InitStruct.Pin = TEMPERATURE_HUMIDITY_Pin;
     GPIO_InitStruct.Mode = LL_GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = LL_GPIO_PULL_UP;
-//    SYSCFG->EXTICR[0] &= ~SYSCFG_EXTICR1_EXTI1;
-//    SYSCFG->EXTICR[0] |= SYSCFG_EXTICR1_EXTI1_PA;
-//    NVIC_SetPriority(EXTI1_IRQn, 0);
-//    NVIC_EnableIRQ(EXTI1_IRQn);
-//    LL_EXTI_EnableRisingTrig_0_31(LL_EXTI_LINE_1);
-//    LL_EXTI_EnableFallingTrig_0_31(LL_EXTI_LINE_1);
-//    LL_EXTI_EnableIT_0_31(LL_EXTI_LINE_1);
+
+    if (interrupt_mode) {
+        SYSCFG->EXTICR[0] &= ~SYSCFG_EXTICR1_EXTI1;
+        SYSCFG->EXTICR[0] |= SYSCFG_EXTICR1_EXTI1_PA;
+        NVIC_SetPriority(EXTI1_IRQn, 0);
+        NVIC_EnableIRQ(EXTI1_IRQn);
+        LL_EXTI_EnableRisingTrig_0_31(LL_EXTI_LINE_1);
+        LL_EXTI_EnableFallingTrig_0_31(LL_EXTI_LINE_1);
+        LL_EXTI_EnableIT_0_31(LL_EXTI_LINE_1);
+    }
+
     LL_GPIO_Init(TEMPERATURE_HUMIDITY_GPIO_Port, &GPIO_InitStruct);
 }
 
@@ -71,8 +75,8 @@ int timeHighLevel() {
     int elapsed_time_us = 0;
 
     while(LL_GPIO_IsInputPinSet(TEMPERATURE_HUMIDITY_GPIO_Port, TEMPERATURE_HUMIDITY_Pin)) {
-        sleepUs(1);
-        elapsed_time_us += 1;
+        sleepUsOneShotMode(10);
+        elapsed_time_us += 10;
     }
 
     return elapsed_time_us;
@@ -82,109 +86,75 @@ int timeLowLevel() {
     int elapsed_time_us = 0;
 
     while(!LL_GPIO_IsInputPinSet(TEMPERATURE_HUMIDITY_GPIO_Port, TEMPERATURE_HUMIDITY_Pin)) {
-        sleepUs(1);
-        elapsed_time_us += 1;
+        sleepUsOneShotMode(10);
+        elapsed_time_us += 10;
     }
 
     return elapsed_time_us;
 }
 
-void read() {
+HumTempReading read() {
+    constexpr bool INTERRUPT_MODE = false;
     constexpr int NUM_TOTAL_BITS = 5 * 8;
     volatile int buffer[NUM_TOTAL_BITS] = {0};
+    uint16_t humidity_bits {};
+    uint16_t temperature_bits {};
 
     takeGpioAsOutput();
     LL_GPIO_ResetOutputPin(TEMPERATURE_HUMIDITY_GPIO_Port, TEMPERATURE_HUMIDITY_Pin);
 
     /* Start signal (line low) for at least 1 ms */
     /* maybe i can use the systick for this kind of delay */
-    constexpr int start_delay_ms = 18;
+    constexpr int start_delay_ms = 20;
     LL_mDelay(start_delay_ms);
 
     restartUsTick();
-    letGpioToSensor();
+    letGpioToSensor(INTERRUPT_MODE);
 
-    /* Everything will be done in the EXTI1_IRQHandler */
     /* Should be ~20-40 us */
-    //int elapsed_time_us_after_start = waitForLowLevel();
+    int timed_us = timeHighLevel();
 
-//    /* Should be ~20-40 us */
-//    int elapsed_time_us_after_start = waitForLowLevel();
-//
-//    /* Should be aruond ~80 us */
-//    int elapsed_low_level = timeLowLevel();
-//    int elapsed_high_level = timeHighLevel();
-//
-//    int count_bits = 0;
-//    while(count_bits < NUM_TOTAL_BITS) {
-//        /*
-//         * every bit's transmission starts with low-voltage level that last 50
-//         * us
-//         */
-//        int time_before_bit_value = timeLowLevel();
-//
-//        /*
-//         * After the 50 us of low voltage, the duration of the next high signal
-//         * determines the value of the bit.
-//         * If the duration is ~26-28 us than it is low level, if the duration is
-//         * ~70us than the value is high.
-//         */
-//        int time_for_bit = timeHighLevel();
-//        int current_value = 0;
-//        if (time_for_bit < 10) {
-//            current_value = 0;
-//        } else {
-//            current_value = 1;
-//        }
-//
-//        buffer[count_bits] = current_value;
-//        ++count_bits;
-//    }
-//
-//    buffer[0] = 0;
-}
+    /* Should be aruond ~80 us */
+    timed_us = timeLowLevel();
+    timed_us = timeHighLevel();
 
-bool dht22_read(volatile uint8_t data[5]) {
-    uint32_t start_time, delta;
-    int bit_idx = 0;
+    int count_bits {};
+    while(count_bits < NUM_TOTAL_BITS) {
+        /*
+         * every bit's transmission starts with low-voltage level that last 50
+         * us
+         */
+        int time_before_bit_value = timeLowLevel();
 
-    // 1. Send start signal
-    takeGpioAsOutput();
-    LL_GPIO_ResetOutputPin(TEMPERATURE_HUMIDITY_GPIO_Port, TEMPERATURE_HUMIDITY_Pin);
-    LL_mDelay(20);
+        /*
+         * After the 50 us of low voltage, the duration of the next high signal
+         * determines the value of the bit.
+         * If the duration is ~26-28 us than it is low level,
+         * if the duration is ~70us than the value is high.
+         */
+        int time_for_bit = timeHighLevel();
+        int current_value = 0;
+        if (time_for_bit < 40) {
+            current_value = 0;
+        } else {
+            current_value = 1;
+        }
 
-    letGpioToSensor();
+        if (count_bits < 16) {
+            humidity_bits |= (current_value << (15 - count_bits));
+        } else if (count_bits < 32) {
+            temperature_bits |= (current_value << (15 - (count_bits % 16)));
+        }
 
-    // 2. Wait for sensor response
-    start_time = getCurrentUsTick();
-    while (LL_GPIO_IsInputPinSet(TEMPERATURE_HUMIDITY_GPIO_Port, TEMPERATURE_HUMIDITY_Pin)) {
-        if ((getCurrentUsTick() - start_time) > 100) return false; // Sensor should pull low
+        buffer[count_bits] = current_value;
+        ++count_bits;
     }
 
-    // 3. Wait for sensor to pull high
-    while (!LL_GPIO_IsInputPinSet(TEMPERATURE_HUMIDITY_GPIO_Port, TEMPERATURE_HUMIDITY_Pin));
-    // 4. Wait for sensor to pull low (start of first bit)
-    while (LL_GPIO_IsInputPinSet(TEMPERATURE_HUMIDITY_GPIO_Port, TEMPERATURE_HUMIDITY_Pin));
+    constexpr uint32_t HIGH_BIT_HUMIDITY_MASK = 0x0000001100;
+    float humidity = humidity_bits / 10.0f;
+    float temperature = temperature_bits / 10.0f;
 
-    // 5. Read 40 bits
-    for (int i = 0; i < 40; ++i) {
-        // Wait for pin to go high
-        while (!LL_GPIO_IsInputPinSet(TEMPERATURE_HUMIDITY_GPIO_Port, TEMPERATURE_HUMIDITY_Pin));
-
-        start_time = getCurrentUsTick();
-        // Wait while pin stays high
-        while (LL_GPIO_IsInputPinSet(TEMPERATURE_HUMIDITY_GPIO_Port, TEMPERATURE_HUMIDITY_Pin));
-        delta = getCurrentUsTick() - start_time;
-
-        // If high signal > 40us → 1, else → 0
-        data[i / 8] <<= 1;
-        if (delta > 40)
-            data[i / 8] |= 1;
-    }
-
-    // 6. Checksum
-    uint8_t sum = data[0] + data[1] + data[2] + data[3];
-    return sum == data[4];
+    return HumTempReading { humidity, temperature };
 }
 
 static ReadStates state = WAITING_START;

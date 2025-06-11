@@ -7,11 +7,14 @@
 #ifdef __cplusplus
 namespace temp {
 #endif
+    struct HumTempReading {
+        float humidity;
+        float temperature;
+    };
 
     void init();
-    void read();
+    HumTempReading read();
 
-    bool dht22_read(volatile uint8_t* data);
     void advanceStateMachine(bool value, uint32_t us);
 
 #ifdef __cplusplus

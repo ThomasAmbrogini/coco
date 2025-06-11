@@ -9,6 +9,7 @@ extern "C" {
 
 int MX_TIMER_Init(void);
 void sleepUs(int us);
+void sleepUsOneShotMode(int us);
 
 uint32_t getCurrentUsTick(void);
 uint32_t restartUsTick(void);

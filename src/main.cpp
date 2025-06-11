@@ -25,9 +25,8 @@ int main() {
 
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
-    volatile uint8_t data[5] = {0};
-    temp::dht22_read(data);
-//    temp::read();
+    //TODO: i need to perform the actual read of the data.
+    volatile temp::HumTempReading reading = temp::read();
 
     while (true)
     {

@@ -39,6 +39,19 @@ void sleepUs(int us) {
     LL_TIM_DisableCounter(TIM2);
 }
 
+void sleepUsOneShotMode(int us) {
+    LL_TIM_SetAutoReload(TIM2, (us * 16) - 1);
+    LL_TIM_SetCounter(TIM2, 0);
+    LL_TIM_SetOnePulseMode(TIM2, LL_TIM_ONEPULSEMODE_SINGLE);
+    LL_TIM_EnableCounter(TIM2);
+    LL_TIM_ClearFlag_UPDATE(TIM2);
+
+    while (LL_TIM_IsActiveFlag_UPDATE(TIM2) != 1) {
+    }
+
+    LL_TIM_ClearFlag_UPDATE(TIM2);
+}
+
 uint32_t getCurrentUsTick(void) {
     return LL_TIM_GetCounter(TIM5);
 }
