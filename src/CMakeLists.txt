@@ -56,7 +56,7 @@ add_subdirectory(temp_humidity_sensor)
 add_executable(TemperatureTaker ${SOURCES_APPLICATION} ${STM_APPLICATION_SRC})
 target_link_libraries(TemperatureTaker PRIVATE stm_drivers)
 target_compile_options(TemperatureTaker PRIVATE "-save-temps" "-fno-exceptions" "-g"
-"-O3")
+"-O0")
 target_compile_options(TemperatureTaker PRIVATE "-ffunction-sections" "-fdata-sections")
 target_link_options(TemperatureTaker PRIVATE "-Wl,--gc-sections" "-Wl,--print-gc-sections")
 target_link_options(TemperatureTaker PUBLIC -T${CMAKE_SOURCE_DIR}/stm32f411.ld)

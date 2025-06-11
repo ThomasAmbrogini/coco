@@ -6,6 +6,8 @@
 
 #include "stm32f4xx_ll_utils.h"
 
+#include <limits>
+
 namespace temp {
 
 typedef enum {
@@ -60,43 +62,40 @@ void letGpioToSensor(bool interrupt_mode) {
     LL_GPIO_Init(TEMPERATURE_HUMIDITY_GPIO_Port, &GPIO_InitStruct);
 }
 
-int waitForLowLevel() {
-    int elapsed_time_us = 0;
-
+uint32_t timeHighLevel() {
+    uint32_t start_ticks = getCurrentUsTick();
     while(LL_GPIO_IsInputPinSet(TEMPERATURE_HUMIDITY_GPIO_Port, TEMPERATURE_HUMIDITY_Pin)) {
-        sleepUs(1);
-        elapsed_time_us += 1;
+    }
+    uint32_t end_ticks = getCurrentUsTick();
+
+    uint32_t difference {end_ticks - start_ticks};
+    if (end_ticks < start_ticks) {
+        difference = std::numeric_limits<uint32_t>::max() - start_ticks +
+            end_ticks + 1;
     }
 
-    return elapsed_time_us;
-}
-
-int timeHighLevel() {
-    int elapsed_time_us = 0;
-
-    while(LL_GPIO_IsInputPinSet(TEMPERATURE_HUMIDITY_GPIO_Port, TEMPERATURE_HUMIDITY_Pin)) {
-        sleepUsOneShotMode(10);
-        elapsed_time_us += 10;
-    }
-
-    return elapsed_time_us;
+    return difference;
 }
 
 int timeLowLevel() {
-    int elapsed_time_us = 0;
-
+    uint32_t start_ticks = getCurrentUsTick();
     while(!LL_GPIO_IsInputPinSet(TEMPERATURE_HUMIDITY_GPIO_Port, TEMPERATURE_HUMIDITY_Pin)) {
-        sleepUsOneShotMode(10);
-        elapsed_time_us += 10;
+    }
+    uint32_t end_ticks = getCurrentUsTick();
+
+    uint32_t difference {end_ticks - start_ticks};
+    if (end_ticks < start_ticks) {
+        difference = std::numeric_limits<uint32_t>::max() - start_ticks +
+            end_ticks + 1;
     }
 
-    return elapsed_time_us;
+    return difference;
 }
 
 HumTempReading read() {
     constexpr bool INTERRUPT_MODE = false;
     constexpr int NUM_TOTAL_BITS = 5 * 8;
-    volatile int buffer[NUM_TOTAL_BITS] = {0};
+
     uint16_t humidity_bits {};
     uint16_t temperature_bits {};
 
@@ -145,8 +144,6 @@ HumTempReading read() {
         } else if (count_bits < 32) {
             temperature_bits |= (current_value << (15 - (count_bits % 16)));
         }
-
-        buffer[count_bits] = current_value;
         ++count_bits;
     }
 
