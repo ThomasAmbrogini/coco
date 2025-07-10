@@ -48,6 +48,22 @@ void clockConfiguration(void) {
     //different timers.
 }
 
+void measureClockFrequency() {
+    /*
+     * The desired clock source is selected using the MCO1PRE[2:0] and MCO1[1:0]
+     * bits in the RCC clock configuration register (RCC_CFGR).
+     */
+    //MCO1 -> PA8
+    //MCO2 -> PC9
+
+    LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOC);
+
+    LL_GPIO_SetAFPin_8_15(GPIOC, LL_GPIO_PIN_9, LL_GPIO_AF_0);
+    LL_GPIO_SetPinMode(GPIOC, LL_GPIO_PIN_9, LL_GPIO_MODE_ALTERNATE);
+
+    LL_RCC_ConfigMCO(LL_RCC_MCO2SOURCE_SYSCLK, LL_RCC_MCO2_DIV_1);
+}
+
 int main() {
     //TODO: what are the things which have to be absolutely powered at the
     //beginning (something about the clock?
@@ -74,6 +90,7 @@ int main() {
     //TODO: i need to do something in case there is no sensor.
     //volatile temp::HumTempReading reading = temp::read();
 
+    measureClockFrequency();
     clockConfiguration();
 
     while (true)
