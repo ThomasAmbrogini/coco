@@ -5,7 +5,53 @@
 
 void SystemClock_Config(void);
 
+void clockConfiguration(void) {
+    /**
+     * There are three different sources which can be selected for the stm32f411e.
+     *      1. HSI
+     *      2. HSE
+     *      3. PLL
+     *
+     * The system clock can be output on a pin with the MCO2 pin.
+     *
+     *
+     */
+
+    /* Do i need to power the RCC? */
+
+    /* The stm32f4 discovery has the X2 on-board oscillator which can be used for external.*/
+
+    /* hse_ready is not palced to true until the HSE is not turned on. */
+    if (!LL_RCC_HSE_IsOn()) {
+        LL_RCC_HSE_Enable();
+
+        /*
+         * I can switch to a clock only when it is read, but it seems that even if
+         * i do it before it is actually ready, it will wait until it is ready before
+         * changing the system clock to the specified source.
+         */
+        while(!LL_RCC_HSE_IsReady()) {
+        }
+
+        /* hse on is true in here. */
+    }
+
+    //TODO: I think I have to set the RCC_CFGR register in the bit SW to select
+    //the system switch.
+
+    //TODO: i can now which clock is current used as system clock in the cr.
+
+    //TODO: there is a safety mechanisms which says something when the clock fails.
+    //I think this is only for the HSE. it is called css(clock security system).
+
+    //TODO: i can also measure the frequency of the various clocks using two
+    //different timers.
+}
+
 int main() {
+    //TODO: what are the things which have to be absolutely powered at the
+    //beginning (something about the clock?
+
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SYSCFG);
     LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_PWR);
@@ -25,8 +71,10 @@ int main() {
 
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
-    //TODO: i need to perform the actual read of the data.
-    volatile temp::HumTempReading reading = temp::read();
+    //TODO: i need to do something in case there is no sensor.
+    //volatile temp::HumTempReading reading = temp::read();
+
+    clockConfiguration();
 
     while (true)
     {
