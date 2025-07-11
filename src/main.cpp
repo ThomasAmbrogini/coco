@@ -38,6 +38,12 @@ void clockConfiguration(void) {
 
     //TODO: I think I have to set the RCC_CFGR register in the bit SW to select
     //the system switch.
+    LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSE);
+
+    volatile uint32_t hsi_on = LL_RCC_HSI_IsOn();
+    if (LL_RCC_HSI_IsOn()) {
+        LL_RCC_HSI_Disable();
+    }
 
     //TODO: i can now which clock is current used as system clock in the cr.
 
@@ -46,6 +52,24 @@ void clockConfiguration(void) {
 
     //TODO: i can also measure the frequency of the various clocks using two
     //different timers.
+}
+
+void PLLConfiguration() {
+    // PLL Configuration
+    // PLL configuration can not change once it is enabled, so it has to be
+    // configured before enabling it.
+    //
+    //
+    // The software has to set these bits correctly to ensure that the VCO input frequency
+    // ranges from 1 to 2 MHz. It is recommended to select a frequency of 2 MHz to limit
+    // PLL jitter.
+    LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSE, LL_RCC_PLLM_DIV_4, 100, LL_RCC_PLLP_DIV_2);
+
+    LL_RCC_PLL_Enable();
+    while (!LL_RCC_PLL_IsReady()) {
+    }
+
+    LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL);
 }
 
 void measureClockFrequency() {
@@ -59,9 +83,11 @@ void measureClockFrequency() {
     LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOC);
 
     LL_GPIO_SetAFPin_8_15(GPIOC, LL_GPIO_PIN_9, LL_GPIO_AF_0);
+
+    LL_GPIO_SetPinSpeed(GPIOC, LL_GPIO_PIN_9, LL_GPIO_SPEED_FREQ_VERY_HIGH);
     LL_GPIO_SetPinMode(GPIOC, LL_GPIO_PIN_9, LL_GPIO_MODE_ALTERNATE);
 
-    LL_RCC_ConfigMCO(LL_RCC_MCO2SOURCE_SYSCLK, LL_RCC_MCO2_DIV_1);
+    LL_RCC_ConfigMCO(LL_RCC_MCO2SOURCE_PLLCLK, LL_RCC_MCO2_DIV_1);
 }
 
 int main() {
@@ -83,15 +109,16 @@ int main() {
     constexpr int start_delay_ms = 1000;
     LL_mDelay(start_delay_ms);
 
-    int ret = MX_TIMER_Init();
+    //int ret = MX_TIMER_Init();
 
     /* Initialize all configured peripherals */
-    MX_GPIO_Init();
+    //MX_GPIO_Init();
     //TODO: i need to do something in case there is no sensor.
     //volatile temp::HumTempReading reading = temp::read();
 
     measureClockFrequency();
     clockConfiguration();
+    PLLConfiguration();
 
     while (true)
     {
