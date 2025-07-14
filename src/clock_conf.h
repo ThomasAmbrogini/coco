@@ -12,6 +12,13 @@ inline constexpr int maximum_APB2_freq_MHz = 100;
 //TODO: I want to change the clock to the different peripherals of the system.
 //TODO: I want to enable the clock for the different peripherals of the system.
 
+void clockConfiguration(void);
+void changeFrequency();
+void PLLConfiguration();
+
+//TODO: this has to be removed.
+void measureClockFrequency();
+
 void setSysClockFreq(int sysclock_freq);
 
 int computeAHBFreq();
