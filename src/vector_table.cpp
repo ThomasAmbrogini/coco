@@ -1,5 +1,7 @@
 #include <stdint.h>
 
+#include "stm32f4xx.h"
+
 static void startup_handler();
 
 int main();
@@ -12,15 +14,20 @@ extern "C" void Default_Handler(void) {
 
 void __attribute__((weak, alias("Default_Handler"))) EXTI0_IRQHandler(void);
 void __attribute__((weak, alias("Default_Handler"))) EXTI1_IRQHandler(void);
+void __attribute__((weak, alias("Default_Handler"))) NMI_Handler(void);
+void __attribute__((weak, alias("Default_Handler"))) HardFault_Handler(void);
+void __attribute__((weak, alias("Default_Handler"))) MemManage_Handler(void);
+void __attribute__((weak, alias("Default_Handler"))) BusFault_Handler(void);
+void __attribute__((weak, alias("Default_Handler"))) UsageFault_Handler(void);
 
 __attribute__((section(".isr_vector"))) Isr interrupt_vector_table[] = {
     (Isr) 0x20004000,
      startup_handler,
-    (Isr) 0x0,
-    (Isr) 0x0,
-    (Isr) 0x0,
-    (Isr) 0x0,
-    (Isr) 0x0,
+     NMI_Handler,
+     HardFault_Handler,
+     MemManage_Handler,
+     BusFault_Handler,
+     UsageFault_Handler,
     (Isr) 0x0,
     (Isr) 0x0,
     (Isr) 0x0,

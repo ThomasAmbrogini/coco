@@ -1,4 +1,5 @@
 #include "common.h"
+#include "clock_conf.h"
 #include "gpio.h"
 #include "temperature_humidity_sensor.h"
 #include "timer.h"
@@ -36,8 +37,6 @@ void clockConfiguration(void) {
         /* hse on is true in here. */
     }
 
-    //TODO: I think I have to set the RCC_CFGR register in the bit SW to select
-    //the system switch.
     LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSE);
 
     volatile uint32_t hsi_on = LL_RCC_HSI_IsOn();
@@ -49,9 +48,6 @@ void clockConfiguration(void) {
 
     //TODO: there is a safety mechanisms which says something when the clock fails.
     //I think this is only for the HSE. it is called css(clock security system).
-
-    //TODO: i can also measure the frequency of the various clocks using two
-    //different timers.
 }
 
 void PLLConfiguration() {
@@ -63,16 +59,38 @@ void PLLConfiguration() {
     // The software has to set these bits correctly to ensure that the VCO input frequency
     // ranges from 1 to 2 MHz. It is recommended to select a frequency of 2 MHz to limit
     // PLL jitter.
+
+    LL_FLASH_SetLatency(LL_FLASH_LATENCY_1);
+    while(LL_FLASH_GetLatency() != LL_FLASH_LATENCY_1) {
+    }
+    LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1);
+
     LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSE, LL_RCC_PLLM_DIV_4, 100, LL_RCC_PLLP_DIV_2);
 
     LL_RCC_PLL_Enable();
     while (!LL_RCC_PLL_IsReady()) {
     }
 
+    LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
+    LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_1);
+    LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_1);
+
     LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL);
+
+    while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL)
+    {
+    }
+
+    LL_SetSystemCoreClock(100000000);
+    LL_RCC_SetTIMPrescaler(LL_RCC_TIM_PRESCALER_FOUR_TIMES);
+
+    clk::setSysClockFreq(25);
 }
 
 void measureClockFrequency() {
+    //TODO: i can also measure the frequency of the various clocks using two
+    //different timers.
+
     /*
      * The desired clock source is selected using the MCO1PRE[2:0] and MCO1[1:0]
      * bits in the RCC clock configuration register (RCC_CFGR).
@@ -94,6 +112,8 @@ int main() {
     //TODO: what are the things which have to be absolutely powered at the
     //beginning (something about the clock?
 
+    //TODO: initialize flash latency.
+
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SYSCFG);
     LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_PWR);
@@ -104,10 +124,11 @@ int main() {
     NVIC_SetPriority(SysTick_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),15, 0));
 
     /* Configure the system clock */
-    SystemClock_Config();
+    //SystemClock_Config();
 
-    constexpr int start_delay_ms = 1000;
-    LL_mDelay(start_delay_ms);
+    //TODO: I would like to have an assert on the frequeuncy of the clock to be
+    //correct.
+    //Can I also made it to a static_assert()?
 
     //int ret = MX_TIMER_Init();
 
@@ -116,9 +137,13 @@ int main() {
     //TODO: i need to do something in case there is no sensor.
     //volatile temp::HumTempReading reading = temp::read();
 
-    measureClockFrequency();
+    //measureClockFrequency();
     clockConfiguration();
     PLLConfiguration();
+
+    volatile int ahb_freq = clk::computeAHBFreq();
+    volatile int apb1_freq = clk::computeAPB1Freq();
+    volatile int apb2_freq = clk::computeAPB2Freq();
 
     while (true)
     {
@@ -132,8 +157,7 @@ int main() {
 void SystemClock_Config(void)
 {
   LL_FLASH_SetLatency(LL_FLASH_LATENCY_0);
-  while(LL_FLASH_GetLatency()!= LL_FLASH_LATENCY_0)
-  {
+  while(LL_FLASH_GetLatency()!= LL_FLASH_LATENCY_0) {
   }
   LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1);
   LL_RCC_HSI_SetCalibTrimming(16);
@@ -190,4 +214,10 @@ void assert_failed(uint8_t *file, uint32_t line)
    */
 }
 #endif
+
+void HardFault_Handler(void) {
+    volatile uint32_t* cfsr = &SCB->CFSR;
+    volatile uint32_t* hfsr = &SCB->HFSR;
+    while (1); // trap
+}
 
