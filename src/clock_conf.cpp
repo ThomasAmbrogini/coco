@@ -18,7 +18,7 @@ namespace stm32f4 {
 
 int SYSClock_freq {};
 
-void clockConfiguration(void) {
+void clockConfiguration(ClockSource clock_source) {
     /**
      * There are three different sources which can be selected for the stm32f411e.
      *      1. HSI
@@ -30,27 +30,69 @@ void clockConfiguration(void) {
      *
      */
 
-    /* Do i need to power the RCC? */
+    //TODO(important): Do i need to power the RCC? */
+    //TODO: flash latenycy computation. It has to be change before in case of
+    //aceleration and after the clock change when decelarating.
 
     /* The stm32f4 discovery has the X2 on-board oscillator which can be used for external.*/
+    if (clock_source == ClockSource::HSE) {
+        /* hse_ready is not placed to true until the HSE is not turned on. */
+        if (!LL_RCC_HSE_IsOn()) {
+            LL_RCC_HSE_Enable();
 
-    /* hse_ready is not placed to true until the HSE is not turned on. */
-    if (!LL_RCC_HSE_IsOn()) {
-        LL_RCC_HSE_Enable();
+            /*
+             * I can switch to a clock only when it is read, but it seems that even if
+             * i do it before it is actually ready, it will wait until it is ready before
+             * changing the system clock to the specified source.
+             */
+            while(!LL_RCC_HSE_IsReady()) {
+            }
 
-        /*
-         * I can switch to a clock only when it is read, but it seems that even if
-         * i do it before it is actually ready, it will wait until it is ready before
-         * changing the system clock to the specified source.
-         */
-        while(!LL_RCC_HSE_IsReady()) {
+            /* hse on is true in here. */
         }
 
-        /* hse on is true in here. */
+        LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSE);
+
+    } else if (clock_source == ClockSource::HSI) {
+        if (!LL_RCC_HSI_IsReady()) {
+            LL_RCC_HSI_Enable();
+
+            while (!LL_RCC_HSI_IsReady()) {
+            }
+        }
+
+        LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSI);
+    } else if (clock_source == ClockSource::PLL) {
+
+        //TODO: A lot of parameters are passed in here! How do i pass those ones?
+        LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSE, LL_RCC_PLLM_DIV_4, 100, LL_RCC_PLLP_DIV_2);
+
+        LL_RCC_PLL_Enable();
+        while (!LL_RCC_PLL_IsReady()) {
+        }
+
+        LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL);
+
+        while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL)
+        {
+        }
     }
 
-    LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSE);
+    //TODO: how do i pass those?
+    //Do i need to do this before changing the clock? I think so, otherwise I
+    //would have a different clock on the bus (which could be higher than the
+    //maximum).
+    LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
+    LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_1);
+    LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_1);
 
+    LL_RCC_SetTIMPrescaler(LL_RCC_TIM_PRESCALER_FOUR_TIMES);
+
+    //TODO: disable the current clock to save some power.
+    //TODO: is there a case where you should have two clock sources, what about
+    //the feature to fallback in case the HSE fails?
+    //TODO: if i am using the pll with HSE as source, and the HSE fails, can i
+    //use the PLL with the HSI?
     volatile uint32_t hsi_on = LL_RCC_HSI_IsOn();
     if (LL_RCC_HSI_IsOn()) {
         LL_RCC_HSI_Disable();
