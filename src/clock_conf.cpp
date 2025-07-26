@@ -7,6 +7,85 @@
 #include "stm32f4xx_ll_system.h"
 #include "stm32f4xx_ll_utils.h"
 
+//TODO: algo to implement to find the closest clock to the desired one.
+//#include <cassert>
+//#include <fmt/base.h>
+//#include <limits>
+//
+//inline constexpr int maximum_frequency = 100000000;
+//inline constexpr int input_frequency = 8000000;
+//
+//struct PLLParams {
+//    int pllm;
+//    int plln;
+//    int pllp;
+//};
+//
+//
+//template<typename T>
+//constexpr T abs(T value) {
+//    if (value < 0) {
+//        return -value;
+//    } else {
+//        return value;
+//    }
+//}
+//
+//constexpr PLLParams compute_pll_params(int desired_frequency) {
+//    assert(desired_frequency <= maximum_frequency);
+//    PLLParams ret {};
+//    /*
+//     * output_frequency = vco_freq * plln / pllp;
+//     * vco_freq = input_freq / pllm;
+//     */
+//    constexpr int min_pllm = 2;
+//    constexpr int max_pllm = 63;
+//
+//    constexpr int min_plln = 50;
+//    constexpr int max_plln = 432;
+//
+//    constexpr int min_pllp = 2;
+//    constexpr int max_pllp = 8;
+//
+//    constexpr int max_vco_freq = 2000000;
+//    constexpr int min_vco_freq = 1000000;
+//
+//    constexpr int pllm_start = input_frequency / max_vco_freq;
+//    constexpr int pllm_end = input_frequency / min_vco_freq;
+//
+//    int min_err = std::numeric_limits<int>::max();
+//    for (int pllm = pllm_start; pllm < pllm_end; ++pllm) {
+//        int vco_freq = round_to_closest_int(input_frequency, pllm);
+//        for (int plln = min_plln; plln < max_plln; ++plln) {
+//            for (int pllp = min_pllp; pllp < max_pllp; pllp+=2) {
+//                int output_frequency = round_to_closest_int(vco_freq * plln, pllp);
+//                if (output_frequency == desired_frequency) {
+//                    return PLLParams{pllm, plln, pllp};
+//                }
+//                else {
+//                    int err = abs(output_frequency - desired_frequency);
+//                    if (err < min_err) {
+//                        min_err = err;
+//                        ret.pllm = pllm;
+//                        ret.plln = plln;
+//                        ret.pllp = pllp;
+//                    }
+//                }
+//            }
+//        }
+//    }
+//
+//    return ret;
+//}
+//
+//int main() {
+//    static constexpr int desired_frequency = 99999998;
+//    constexpr PLLParams params = compute_pll_params(desired_frequency);
+//
+//    fmt::print("{},{},{}\n", params.pllm, params.plln, params.pllp);
+//}
+
+
 //TODO: maybe everything can be done in constexpr because the clock
 //configuration will not be done at runtime.
 namespace clk {
@@ -18,15 +97,95 @@ namespace stm32f4 {
 
 int SYSClock_freq {};
 
-void clockConfiguration(ClockSource clock_source) {
+static inline void configureHSE() {
+    /* hse_ready is not placed to true until the HSE is not turned on. */
+    if (!LL_RCC_HSE_IsOn()) {
+        LL_RCC_HSE_Enable();
+        /*
+         * I can switch to a clock only when it is read, but it seems that even if
+         * i do it before it is actually ready, it will wait until it is ready before
+         * changing the system clock to the specified source.
+         */
+        while(!LL_RCC_HSE_IsReady()) {
+        }
+
+        /* hse on is true in here. */
+    }
+
+    LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSE);
+    while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_HSE)
+    {
+    }
+}
+
+static inline void configureHSI() {
+    if (!LL_RCC_HSI_IsReady()) {
+        LL_RCC_HSI_Enable();
+        while (!LL_RCC_HSI_IsReady()) {
+        }
+    }
+
+    LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSI);
+    while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_HSI)
+    {
+    }
+}
+
+static inline void configurePLL() {
+    if (!LL_RCC_PLL_IsReady()) {
+        LL_RCC_PLL_Enable();
+        while (!LL_RCC_PLL_IsReady()) {
+        }
+    }
+
+    LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL);
+    while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL)
+    {
+    }
+}
+
+struct PLLParams {
+    int pllm;
+    int plln;
+    int pllp;
+};
+
+constexpr PLLParams computePLLParams(int desired_frequency) {
     /**
-     * There are three different sources which can be selected for the stm32f411e.
-     *      1. HSI
-     *      2. HSE
-     *      3. PLL
+     * Limitations for the value of pllm:
+     * Caution: The software has to set these bits correctly to ensure that the
+     * VCO input frequency ranges from 1 to 2 MHz. It is recommended to select
+     * a frequency of 2 MHz to limit PLL jitter.
+     * VCO input frequency = PLL input clock frequency / PLLM with 2 ≤PLLM ≤63
+     */
+    static constexpr int ideal_vco_freq_MHz = 2;
+    static constexpr int pllm = external_oscillator_freq_MHz  / ideal_vco_freq_MHz;
+    static_assert(pllm >= 2 && pllm <= 63, "The pllm value is out of range");
+
+    /**
+     * Limitations for the value of plln:
+     * Caution: The software has to set these bits correctly to ensure that the
+     * VCO output frequency is between 100 and 432 MHz
+     * VCO output frequency = VCO input frequency × PLLN with 50 ≤PLLN ≤432
+     */
+    static constexpr int plln = ;
+
+    /**
+     * Limitations for the value of pllp:
+     * Caution: The software has to set these bits correctly not to exceed
+     * 100 MHz on this domain.
+     * PLL output clock frequency = VCO frequency / PLLP
+     * with PLLP = 2, 4, 6, or 8
+     */
+    static constexpr int pllp = ;
+
+    return PLLParams {.pllm = pllm, };
+}
+
+void clockConfiguration(ClockSource clock_input, int desired_frequency) {
+    /**
      *
      * The system clock can be output on a pin with the MCO2 pin.
-     *
      *
      */
 
@@ -36,46 +195,16 @@ void clockConfiguration(ClockSource clock_source) {
 
     /* The stm32f4 discovery has the X2 on-board oscillator which can be used for external.*/
     if (clock_source == ClockSource::HSE) {
-        /* hse_ready is not placed to true until the HSE is not turned on. */
-        if (!LL_RCC_HSE_IsOn()) {
-            LL_RCC_HSE_Enable();
-
-            /*
-             * I can switch to a clock only when it is read, but it seems that even if
-             * i do it before it is actually ready, it will wait until it is ready before
-             * changing the system clock to the specified source.
-             */
-            while(!LL_RCC_HSE_IsReady()) {
-            }
-
-            /* hse on is true in here. */
-        }
-
-        LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSE);
-
+        configureHSE();
     } else if (clock_source == ClockSource::HSI) {
-        if (!LL_RCC_HSI_IsReady()) {
-            LL_RCC_HSI_Enable();
-
-            while (!LL_RCC_HSI_IsReady()) {
-            }
-        }
-
-        LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSI);
+        configureHSI();
     } else if (clock_source == ClockSource::PLL) {
-
         //TODO: A lot of parameters are passed in here! How do i pass those ones?
+        //TODO: this source clock is assumed to be the HSE. Later we will try to
+        //add the support for other things.
         LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSE, LL_RCC_PLLM_DIV_4, 100, LL_RCC_PLLP_DIV_2);
 
-        LL_RCC_PLL_Enable();
-        while (!LL_RCC_PLL_IsReady()) {
-        }
-
-        LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL);
-
-        while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL)
-        {
-        }
+        configurePLL();
     }
 
     //TODO: how do i pass those?
