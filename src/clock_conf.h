@@ -266,6 +266,79 @@ static inline void configurePLL() {
     }
 }
 
+enum class SuppliedVoltage {
+    /* 1.71V to 2.1V */
+    VoltageRange0,
+    /* 2.1 to 2.4V */
+    VoltageRange1,
+    /* 2.4 to 2.7V */
+    VoltageRange2,
+    /* 2.7 to 3.6V */
+    VoltageRange3,
+};
+
+template<SuppliedVoltage _supplied_voltage, int _hclk_freq_hz>
+consteval int compute_flash_latency() {
+    if constexpr (_supplied_voltage == SuppliedVoltage::VoltageRange0) {
+        if constexpr (0 < _hclk_freq_hz <= 16000000) {
+            return 0;
+        } else if constexpr (16000000 < _hclk_freq_hz <= 32000000) {
+            return 1;
+        } else if constexpr (32000000 < _hclk_freq_hz <= 48000000) {
+            return 2;
+        } else if constexpr (48000000 < _hclk_freq_hz <= 64000000) {
+            return 3;
+        } else if constexpr (64000000 < _hclk_freq_hz <= 80000000) {
+            return 4;
+        } else if constexpr (80000000 < _hclk_freq_hz <= 96000000) {
+            return 5;
+        } else if constexpr (96000000 < _hclk_freq_hz <= 100000000) {
+            return 6;
+        }
+    } else if constexpr (_supplied_voltage == SuppliedVoltage::VoltageRange1) {
+        if constexpr (0 < _hclk_freq_hz <= 18000000) {
+            return 0;
+        } else if constexpr (18000000 < _hclk_freq_hz <= 36000000) {
+            return 1;
+        } else if constexpr (36000000 < _hclk_freq_hz <= 54000000) {
+            return 2;
+        } else if constexpr (54000000 < _hclk_freq_hz <= 72000000) {
+            return 3;
+        } else if constexpr (72000000 < _hclk_freq_hz <= 90000000) {
+            return 4;
+        } else if constexpr (90000000 < _hclk_freq_hz <= 100000000) {
+            return 5;
+        }
+    } else if constexpr (_supplied_voltage == SuppliedVoltage::VoltageRange2) {
+        if constexpr (0 < _hclk_freq_hz <= 24000000) {
+            return 0;
+        } else if constexpr (24000000 < _hclk_freq_hz <= 48000000) {
+            return 1;
+        } else if constexpr (48000000 < _hclk_freq_hz <= 72000000) {
+            return 2;
+        } else if constexpr (72000000 < _hclk_freq_hz <= 96000000) {
+            return 3;
+        } else if constexpr (96000000 < _hclk_freq_hz <= 100000000) {
+            return 4;
+        }
+    } else if constexpr (_supplied_voltage == SuppliedVoltage::VoltageRange3) {
+        if constexpr (0 < _hclk_freq_hz <= 30000000) {
+            return 0;
+        } else if constexpr (30000000 < _hclk_freq_hz <= 64000000) {
+            return 1;
+        } else if constexpr (64000000 < _hclk_freq_hz <= 90000000) {
+            return 2;
+        } else if constexpr (90000000 < _hclk_freq_hz <= 100000000) {
+            return 3;
+        }
+    }
+}
+
+/**
+ * @details
+ *    The system is supposed to be used statically and the frequency of the
+ *    system is not supposed to change after initialization.
+ */
 template<ClockSource _clock_source, int _desired_frequency>
 void clockConfiguration() {
     /**
@@ -273,9 +346,18 @@ void clockConfiguration() {
      * The system clock can be output on a pin with the MCO2 pin.
      *
      */
-    //TODO(important): Do i need to power the RCC? */
-    //TODO: flash latenycy computation. It has to be change before in case of
-    //aceleration and after the clock change when decelarating.
+    static constexpr bool acelerating_freq = _desired_frequency > starting_core_freq_hz;
+    if constexpr (acelerating_freq) {
+        static constexpr int num_wait_states = compute_flash_latency<SuppliedVoltage::VoltageRange3, sysclk_freq_hz>();
+
+        LL_FLASH_SetLatency(num_wait_states);
+        while(LL_FLASH_GetLatency()!= num_wait_states) {
+        }
+    }
+
+    //TODO: what is this?
+    //LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1);
+
     //TODO: Change the number of wait states based on the new frequency.
     //It also depends on the supplied power voltage which seems to be something
     //which is known based on the board.
@@ -332,6 +414,14 @@ void clockConfiguration() {
     volatile u32 hsi_on = LL_RCC_HSI_IsOn();
     if (LL_RCC_HSI_IsOn()) {
         LL_RCC_HSI_Disable();
+    }
+
+    if constexpr (!acelerating_freq) {
+        static constexpr int num_wait_states = compute_flash_latency<SuppliedVoltage::VoltageRange3, sysclk_freq_hz>();
+
+        LL_FLASH_SetLatency(num_wait_states);
+        while(LL_FLASH_GetLatency()!= num_wait_states) {
+        }
     }
 
     //TODO: i can now which clock is current used as system clock in the cr.
