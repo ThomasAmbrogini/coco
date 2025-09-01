@@ -36,12 +36,8 @@ int main() {
     //volatile temp::HumTempReading reading = temp::read();
 
     //measureClockFrequency();
-    clk::clockConfiguration();
-    clk::PLLConfiguration();
-
-    volatile int ahb_freq = clk::computeAHBFreq();
-    volatile int apb1_freq = clk::computeAPB1Freq();
-    volatile int apb2_freq = clk::computeAPB2Freq();
+    clk::clockConfiguration<clk::ClockSource::PLL, 100000000>();
+    //clk::PLLConfiguration();
 
     while (true)
     {

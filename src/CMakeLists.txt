@@ -35,8 +35,6 @@ set(STM_APPLICATION_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/core/gpio.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/core/timer.c
     ${CMAKE_CURRENT_SOURCE_DIR}/core/stm32f4xx_it.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/core/sysmem.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/core/syscalls.c
 )
 
 add_library(stm_interface INTERFACE)
@@ -56,12 +54,11 @@ add_subdirectory(temp_humidity_sensor)
 
 add_executable(TemperatureTaker ${SOURCES_APPLICATION} ${STM_APPLICATION_SRC})
 target_link_libraries(TemperatureTaker PRIVATE stm_drivers)
-target_compile_options(TemperatureTaker PRIVATE "-save-temps" "-fno-exceptions" "-g"
+target_compile_options(TemperatureTaker PRIVATE "-save-temps" "-fno-exceptions"
 "-O0")
 target_compile_options(TemperatureTaker PRIVATE "-ffunction-sections" "-fdata-sections")
 target_link_options(TemperatureTaker PRIVATE "-Wl,--gc-sections" "-Wl,--print-gc-sections")
 target_link_options(TemperatureTaker PUBLIC -T${CMAKE_SOURCE_DIR}/stm32f411.ld)
 target_link_libraries(TemperatureTaker PRIVATE gcc)
-target_link_libraries(TemperatureTaker PRIVATE c)
 target_link_libraries(TemperatureTaker PRIVATE temp_humidity)
 
