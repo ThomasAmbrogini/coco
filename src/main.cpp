@@ -36,8 +36,10 @@ int main() {
     //volatile temp::HumTempReading reading = temp::read();
 
     //measureClockFrequency();
-    clk::clockConfiguration<clk::ClockSource::PLL, 100000000>();
+    clk::clock_configuration<clk::ClockSource::PLL_HSE, clk::desired_sysclk_freq_hz>();
     //clk::PLLConfiguration();
+
+    clk::measure_clock_freq();
 
     while (true)
     {

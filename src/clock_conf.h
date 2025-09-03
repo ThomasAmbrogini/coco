@@ -18,8 +18,9 @@ namespace clk {
 //TODO: I need a file which has all the params which are settable of the system.
 /* settable parameters */
 inline constexpr int desired_sysclk_freq_hz = 100000000;
-//TODO: add the prescaler and dividers needed for the various buses.
+static_assert(desired_sysclk_freq_hz <= 100000000, "The maximum frequency for the core is 100MHz");
 
+//TODO: should i just create a different header with all the structures?
 enum class Prescaler {
     div1 = 1,
     div2 = 2,
@@ -33,8 +34,11 @@ enum class Prescaler {
 };
 
 inline constexpr Prescaler apb1_prescaler = Prescaler::div1;
+static_assert(apb1_prescaler <= Prescaler::div16, "The maximum prescaler for apb1 is div16");
 inline constexpr Prescaler apb2_prescaler = Prescaler::div1;
-inline constexpr Prescaler ahb_prescaler = Prescaler::div2;
+static_assert(apb2_prescaler <= Prescaler::div16, "The maximum prescaler for apb2 is div16");
+inline constexpr Prescaler ahb_prescaler = Prescaler::div1;
+static_assert(ahb_prescaler <= Prescaler::div512, "The maximum prescaler for ahb is div512");
 
 struct PLLParams {
     int pllm;
@@ -47,8 +51,8 @@ constexpr PLLParams compute_pll_params(int desired_freq_hz) {
     //TODO: implement custom assert function. We need the UART to implement this.
     //assert(desired_freq_hz <= maximum_frequency);
     PLLParams ret {};
-    constexpr int pllm_start = external_osc_freq_hz / max_vco_freq;
-    constexpr int pllm_end = external_osc_freq_hz / min_vco_freq;
+    constexpr int pllm_start {external_osc_freq_hz / max_vco_freq};
+    constexpr int pllm_end {external_osc_freq_hz / min_vco_freq};
 
     int min_err = std::numeric_limits<int>::max();
     for (int pllm = pllm_start; pllm < pllm_end; ++pllm) {
@@ -63,9 +67,7 @@ constexpr PLLParams compute_pll_params(int desired_freq_hz) {
                     int err = abs(output_frequency - desired_freq_hz);
                     if (err < min_err) {
                         min_err = err;
-                        ret.pllm = pllm;
-                        ret.plln = plln;
-                        ret.pllp = pllp;
+                        ret = {.pllm = pllm, .plln = plln, .pllp = pllp};
                     }
                 }
             }
@@ -90,7 +92,7 @@ enum class Bus {
 };
 
 template<Bus _bus, Prescaler _prescaler>
-constexpr u32 get_ahb_bus_prescaler_value() {
+consteval u32 get_ahb_bus_prescaler_value() {
     static_assert(_prescaler <= Prescaler::div512, "AHB bus supports up to div512 prescaler");
 
     switch (_prescaler) {
@@ -127,7 +129,7 @@ constexpr u32 get_ahb_bus_prescaler_value() {
 }
 
 template<Bus _bus, Prescaler _prescaler>
-constexpr u32 get_apb1_bus_prescaler_value() {
+consteval u32 get_apb1_bus_prescaler_value() {
     static_assert(_prescaler <= Prescaler::div16, "APB1 bus supports up to div16 prescaler");
 
     switch (_prescaler) {
@@ -156,7 +158,7 @@ constexpr u32 get_apb1_bus_prescaler_value() {
 }
 
 template<Bus _bus, Prescaler _prescaler>
-constexpr u32 get_apb2_bus_prescaler_value() {
+consteval u32 get_apb2_bus_prescaler_value() {
     static_assert(_prescaler <= Prescaler::div16, "APB2 bus supports up to div16 prescaler");
 
     switch (_prescaler) {
@@ -185,7 +187,7 @@ constexpr u32 get_apb2_bus_prescaler_value() {
 }
 
 template<Bus _bus, Prescaler _prescaler>
-constexpr u32 convert_prescaler() {
+consteval u32 convert_prescaler() {
     if constexpr (_bus == Bus::AHB) {
         return get_ahb_bus_prescaler_value<_bus, _prescaler>();
     } else if constexpr (_bus == Bus::APB1) {
@@ -197,29 +199,23 @@ constexpr u32 convert_prescaler() {
 
 template<Bus _bus, Prescaler _prescaler>
 constexpr int compute_bus_freq(int sysclk_freq_hz) {
-    //u32 prescaler_value = convert_prescaler<_bus, _prescaler>();
     return sysclk_freq_hz / static_cast<int>(_prescaler);
 }
 
 /* computed parameters */
-inline constexpr int sysclk_freq_hz = compute_frequency(compute_pll_params(desired_sysclk_freq_hz));
-inline constexpr int ahb_freq_hz = compute_bus_freq<Bus::AHB, ahb_prescaler>(sysclk_freq_hz);
-inline constexpr int apb1_freq_hz = compute_bus_freq<Bus::APB1, apb1_prescaler>(sysclk_freq_hz);
-inline constexpr int apb2_freq_hz = compute_bus_freq<Bus::APB2, apb2_prescaler>(sysclk_freq_hz);
-
-//TODO: I want to be able to know the frequeuncy of all the buses. (maybe even
-//of the single peripherals?)
-//TODO: I want to be able to retrieve the current configuration.
-//TODO: I want to change the clock to the different peripherals of the system.
-//TODO: I want to enable the clock for the different peripherals of the system.
+inline constexpr int sysclk_freq_hz {compute_frequency(compute_pll_params(desired_sysclk_freq_hz))};
+inline constexpr int ahb_freq_hz {compute_bus_freq<Bus::AHB, ahb_prescaler>(sysclk_freq_hz)};
+inline constexpr int apb1_freq_hz {compute_bus_freq<Bus::APB1, apb1_prescaler>(sysclk_freq_hz)};
+inline constexpr int apb2_freq_hz {compute_bus_freq<Bus::APB2, apb2_prescaler>(sysclk_freq_hz)};
 
 enum class ClockSource {
     HSI,
     HSE,
-    PLL
+    PLL_HSI,
+    PLL_HSE,
 };
 
-static inline void configureHSE() {
+static inline void configure_HSE() {
     /* hse_ready is not placed to true until the HSE is not turned on. */
     if (!LL_RCC_HSE_IsOn()) {
         LL_RCC_HSE_Enable();
@@ -240,7 +236,7 @@ static inline void configureHSE() {
     }
 }
 
-static inline void configureHSI() {
+static inline void configure_HSI() {
     if (!LL_RCC_HSI_IsReady()) {
         LL_RCC_HSI_Enable();
         while (!LL_RCC_HSI_IsReady()) {
@@ -253,7 +249,7 @@ static inline void configureHSI() {
     }
 }
 
-static inline void configurePLL() {
+static inline void configure_PLL() {
     if (!LL_RCC_PLL_IsReady()) {
         LL_RCC_PLL_Enable();
         while (!LL_RCC_PLL_IsReady()) {
@@ -266,71 +262,16 @@ static inline void configurePLL() {
     }
 }
 
-enum class SuppliedVoltage {
-    /* 1.71V to 2.1V */
-    VoltageRange0,
-    /* 2.1 to 2.4V */
-    VoltageRange1,
-    /* 2.4 to 2.7V */
-    VoltageRange2,
-    /* 2.7 to 3.6V */
-    VoltageRange3,
-};
-
-template<SuppliedVoltage _supplied_voltage, int _hclk_freq_hz>
+template<int _hclk_freq_hz>
 consteval int compute_flash_latency() {
-    if constexpr (_supplied_voltage == SuppliedVoltage::VoltageRange0) {
-        if constexpr (0 < _hclk_freq_hz <= 16000000) {
-            return 0;
-        } else if constexpr (16000000 < _hclk_freq_hz <= 32000000) {
-            return 1;
-        } else if constexpr (32000000 < _hclk_freq_hz <= 48000000) {
-            return 2;
-        } else if constexpr (48000000 < _hclk_freq_hz <= 64000000) {
-            return 3;
-        } else if constexpr (64000000 < _hclk_freq_hz <= 80000000) {
-            return 4;
-        } else if constexpr (80000000 < _hclk_freq_hz <= 96000000) {
-            return 5;
-        } else if constexpr (96000000 < _hclk_freq_hz <= 100000000) {
-            return 6;
-        }
-    } else if constexpr (_supplied_voltage == SuppliedVoltage::VoltageRange1) {
-        if constexpr (0 < _hclk_freq_hz <= 18000000) {
-            return 0;
-        } else if constexpr (18000000 < _hclk_freq_hz <= 36000000) {
-            return 1;
-        } else if constexpr (36000000 < _hclk_freq_hz <= 54000000) {
-            return 2;
-        } else if constexpr (54000000 < _hclk_freq_hz <= 72000000) {
-            return 3;
-        } else if constexpr (72000000 < _hclk_freq_hz <= 90000000) {
-            return 4;
-        } else if constexpr (90000000 < _hclk_freq_hz <= 100000000) {
-            return 5;
-        }
-    } else if constexpr (_supplied_voltage == SuppliedVoltage::VoltageRange2) {
-        if constexpr (0 < _hclk_freq_hz <= 24000000) {
-            return 0;
-        } else if constexpr (24000000 < _hclk_freq_hz <= 48000000) {
-            return 1;
-        } else if constexpr (48000000 < _hclk_freq_hz <= 72000000) {
-            return 2;
-        } else if constexpr (72000000 < _hclk_freq_hz <= 96000000) {
-            return 3;
-        } else if constexpr (96000000 < _hclk_freq_hz <= 100000000) {
-            return 4;
-        }
-    } else if constexpr (_supplied_voltage == SuppliedVoltage::VoltageRange3) {
-        if constexpr (0 < _hclk_freq_hz <= 30000000) {
-            return 0;
-        } else if constexpr (30000000 < _hclk_freq_hz <= 64000000) {
-            return 1;
-        } else if constexpr (64000000 < _hclk_freq_hz <= 90000000) {
-            return 2;
-        } else if constexpr (90000000 < _hclk_freq_hz <= 100000000) {
-            return 3;
-        }
+    if constexpr (_hclk_freq_hz > 0 && _hclk_freq_hz <= 30000000) {
+        return 0;
+    } else if constexpr ((_hclk_freq_hz > 30000000) && (_hclk_freq_hz <= 64000000)) {
+        return 1;
+    } else if constexpr ((_hclk_freq_hz > 64000000) && (_hclk_freq_hz <= 90000000)) {
+        return 2;
+    } else if constexpr ((_hclk_freq_hz > 90000000) && (_hclk_freq_hz <= 100000000)) {
+        return 3;
     }
 }
 
@@ -340,23 +281,31 @@ consteval int compute_flash_latency() {
  *    system is not supposed to change after initialization.
  */
 template<ClockSource _clock_source, int _desired_frequency>
-void clockConfiguration() {
-    /**
-     *
-     * The system clock can be output on a pin with the MCO2 pin.
-     *
-     */
-    static constexpr bool acelerating_freq = _desired_frequency > starting_core_freq_hz;
+void clock_configuration() {
+    static constexpr bool acelerating_freq {_desired_frequency > starting_core_freq_hz};
     if constexpr (acelerating_freq) {
-        static constexpr int num_wait_states = compute_flash_latency<SuppliedVoltage::VoltageRange3, sysclk_freq_hz>();
+        static constexpr int num_wait_states {compute_flash_latency<sysclk_freq_hz>()};
 
         LL_FLASH_SetLatency(num_wait_states);
         while(LL_FLASH_GetLatency()!= num_wait_states) {
         }
     }
 
-    //TODO: what is this?
-    //LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1);
+    //This is a register which regulates the maximum voltage which can be achieved.
+    //This belongs here because if the PLL is configured or not decides the values
+    //which can be set in the VOS register. In the operating conditions it is
+    //possible to see the voltages at which the CPU will run based on the voltage
+    //scale.
+    /* THESE BITS CAN ONLY BE MODIFIED WHEN THE PLL IS OFF. */
+    if constexpr ((_clock_source == ClockSource::PLL_HSI) || (_clock_source == ClockSource::PLL_HSE)) {
+        if constexpr (ahb_freq_hz <= 64000000) {
+            LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE3);
+        } else if constexpr (ahb_freq_hz <= 84000000) {
+            LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE2);
+        } else if constexpr (ahb_freq_hz <= 100000000) {
+            LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1);
+        }
+    }
 
     //TODO: Change the number of wait states based on the new frequency.
     //It also depends on the supplied power voltage which seems to be something
@@ -376,28 +325,29 @@ void clockConfiguration() {
     //All of these can not be done at runtime, but i can compute all the configuration i need at compile time.
     /* The stm32f4 discovery has the X2 on-board oscillator which can be used for external.*/
     if constexpr (_clock_source == ClockSource::HSE) {
-        configureHSE();
+        configure_HSE();
     } else if constexpr (_clock_source == ClockSource::HSI) {
-        configureHSI();
-    } else if constexpr (_clock_source == ClockSource::PLL) {
-        //TODO: A lot of parameters are passed in here! How do i pass those ones?
-        //TODO: this source clock is assumed to be the HSE. Later we will try to
-        //add the support for other things.
-        constexpr PLLParams params = compute_pll_params(_desired_frequency);
+        configure_HSI();
+    } else if constexpr (_clock_source == ClockSource::PLL_HSI) {
+        static constexpr PLLParams params {compute_pll_params(_desired_frequency)};
+
+        LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSI, params.pllm, params.plln, params.pllp);
+        configure_PLL();
+    } else if constexpr (_clock_source == ClockSource::PLL_HSE) {
+        static constexpr PLLParams params {compute_pll_params(_desired_frequency)};
+
         LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSE, params.pllm, params.plln, params.pllp);
 
-        configurePLL();
+        LL_RCC_HSE_Enable();
+        while(!LL_RCC_HSE_IsReady()) {
+        }
+
+        configure_PLL();
     }
 
-    //TODO: i need to compute the prescaler
-    //TODO: how do i pass those?
-    //Do i need to do this before changing the clock? I think so, otherwise I
-    //would have a different clock on the bus (which could be higher than the
-    //maximum).
-
-    constexpr u32 ahb_prescaler = convert_prescaler<Bus::AHB, Prescaler::div1>();
-    constexpr u32 apb1_prescaler = convert_prescaler<Bus::APB1, Prescaler::div1>();
-    constexpr u32 apb2_prescaler = convert_prescaler<Bus::APB1, Prescaler::div1>();
+    static constexpr u32 ahb_prescaler {convert_prescaler<Bus::AHB, Prescaler::div1>()};
+    static constexpr u32 apb1_prescaler {convert_prescaler<Bus::APB1, Prescaler::div1>()};
+    static constexpr u32 apb2_prescaler {convert_prescaler<Bus::APB1, Prescaler::div1>()};
 
     LL_RCC_SetAHBPrescaler(ahb_prescaler);
     LL_RCC_SetAPB1Prescaler(apb1_prescaler);
@@ -406,29 +356,32 @@ void clockConfiguration() {
     //TODO: how do i Configure this? What does it actually do?
     LL_RCC_SetTIMPrescaler(LL_RCC_TIM_PRESCALER_FOUR_TIMES);
 
-    //TODO: disable the current clock to save some power.
     //TODO: is there a case where you should have two clock sources, what about
     //the feature to fallback in case the HSE fails?
     //TODO: if i am using the pll with HSE as source, and the HSE fails, can i
     //use the PLL with the HSI?
-    volatile u32 hsi_on = LL_RCC_HSI_IsOn();
-    if (LL_RCC_HSI_IsOn()) {
+    if constexpr ((_clock_source != ClockSource::HSI) && (_clock_source != ClockSource::PLL_HSI)) {
         LL_RCC_HSI_Disable();
     }
 
     if constexpr (!acelerating_freq) {
-        static constexpr int num_wait_states = compute_flash_latency<SuppliedVoltage::VoltageRange3, sysclk_freq_hz>();
+        static constexpr int num_wait_states {compute_flash_latency<sysclk_freq_hz>()};
 
         LL_FLASH_SetLatency(num_wait_states);
         while(LL_FLASH_GetLatency()!= num_wait_states) {
         }
     }
-
-    //TODO: i can now which clock is current used as system clock in the cr.
-
     //TODO: there is a safety mechanisms which says something when the clock fails.
     //I think this is only for the HSE. it is called css(clock security system).
 }
+
+void measure_clock_freq();
+
+//TODO: I want to be able to know the frequeuncy of all the buses. (maybe even
+//of the single peripherals?)
+//TODO: I want to be able to retrieve the current configuration.
+//TODO: I want to change the clock to the different peripherals of the system.
+//TODO: I want to enable the clock for the different peripherals of the system.
 
 } /* namespace clk */
 
