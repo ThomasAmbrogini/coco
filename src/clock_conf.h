@@ -46,6 +46,25 @@ struct PLLParams {
     int pllp;
 };
 
+/**
+ * @brief Convert the pllp actual value to value to write to the register.
+ */
+constexpr int convert_pllp_to_reg_value(int pllp) {
+    return ((pllp / 2) - 1) << RCC_PLLCFGR_PLLP_Pos;
+}
+static_assert(convert_pllp_to_reg_value(2) == 0);
+static_assert(convert_pllp_to_reg_value(4) == (1 << RCC_PLLCFGR_PLLP_Pos));
+static_assert(convert_pllp_to_reg_value(6) == (2 << RCC_PLLCFGR_PLLP_Pos));
+static_assert(convert_pllp_to_reg_value(8) == (3 << RCC_PLLCFGR_PLLP_Pos));
+
+constexpr int convert_pllp_reg_value(int pllp_reg_value) {
+    return (((pllp_reg_value >> RCC_PLLCFGR_PLLP_Pos) + 1) * 2);
+}
+static_assert(convert_pllp_reg_value(0 << RCC_PLLCFGR_PLLP_Pos) == 2);
+static_assert(convert_pllp_reg_value(1 << RCC_PLLCFGR_PLLP_Pos) == 4);
+static_assert(convert_pllp_reg_value(2 << RCC_PLLCFGR_PLLP_Pos) == 6);
+static_assert(convert_pllp_reg_value(3 << RCC_PLLCFGR_PLLP_Pos) == 8);
+
 //TODO: all these constexpr functions can be moved to an util clock header.
 constexpr PLLParams compute_pll_params(int desired_freq_hz) {
     //TODO: implement custom assert function. We need the UART to implement this.
@@ -61,13 +80,13 @@ constexpr PLLParams compute_pll_params(int desired_freq_hz) {
             for (int pllp = min_pllp; pllp < max_pllp; pllp+=2) {
                 int output_frequency = round_to_closest_int(vco_freq * plln, pllp);
                 if (output_frequency == desired_freq_hz) {
-                    return PLLParams{pllm, plln, pllp};
+                    return PLLParams{pllm, plln, convert_pllp_to_reg_value(pllp)};
                 }
                 else {
                     int err = abs(output_frequency - desired_freq_hz);
                     if (err < min_err) {
                         min_err = err;
-                        ret = {.pllm = pllm, .plln = plln, .pllp = pllp};
+                        ret = {.pllm = pllm, .plln = plln, .pllp = convert_pllp_to_reg_value(pllp)};
                     }
                 }
             }
@@ -82,7 +101,7 @@ constexpr int compute_frequency(PLLParams pll_params) {
      * output_frequency = vco_freq * plln / pllp;
      * vco_freq = input_freq / pllm;
      */
-    return (external_osc_freq_hz / pll_params.pllm) * pll_params.plln / pll_params.pllp;
+    return (external_osc_freq_hz / pll_params.pllm) * pll_params.plln / convert_pllp_reg_value(pll_params.pllp);
 }
 
 enum class Bus {
