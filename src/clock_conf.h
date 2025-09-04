@@ -110,6 +110,7 @@ enum class Bus {
     APB2,
 };
 
+//TODO: why do i even pass the bus if the name of the bus is on the signature.
 template<Bus _bus, Prescaler _prescaler>
 consteval u32 get_ahb_bus_prescaler_value() {
     static_assert(_prescaler <= Prescaler::div512, "AHB bus supports up to div512 prescaler");
@@ -147,6 +148,7 @@ consteval u32 get_ahb_bus_prescaler_value() {
     }
 }
 
+//TODO: why do i even pass the bus if the name of the bus is on the signature.
 template<Bus _bus, Prescaler _prescaler>
 consteval u32 get_apb1_bus_prescaler_value() {
     static_assert(_prescaler <= Prescaler::div16, "APB1 bus supports up to div16 prescaler");
@@ -176,6 +178,7 @@ consteval u32 get_apb1_bus_prescaler_value() {
     }
 }
 
+//TODO: why do i even pass the bus if the name of the bus is on the signature.
 template<Bus _bus, Prescaler _prescaler>
 consteval u32 get_apb2_bus_prescaler_value() {
     static_assert(_prescaler <= Prescaler::div16, "APB2 bus supports up to div16 prescaler");
