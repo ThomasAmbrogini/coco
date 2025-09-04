@@ -20,6 +20,8 @@ namespace clk {
 inline constexpr int desired_sysclk_freq_hz = 100000000;
 static_assert(desired_sysclk_freq_hz <= 100000000, "The maximum frequency for the core is 100MHz");
 
+inline constexpr bool clock_security_system_enabled {true};
+
 //TODO: should i just create a different header with all the structures?
 enum class Prescaler {
     div1 = 1,
@@ -395,6 +397,9 @@ void clock_configuration() {
     }
     //TODO: there is a safety mechanisms which says something when the clock fails.
     //I think this is only for the HSE. it is called css(clock security system).
+    if constexpr (clock_security_system_enabled) {
+        LL_RCC_HSE_EnableCSS();
+    }
 }
 
 void measure_clock_freq();

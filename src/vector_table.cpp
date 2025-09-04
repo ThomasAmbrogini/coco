@@ -1,5 +1,6 @@
 #include <stdint.h>
 
+#include "stm32f4xx_ll_rcc.h"
 #include "stm32f4xx.h"
 
 static void startup_handler();
@@ -14,7 +15,7 @@ extern "C" void Default_Handler(void) {
 
 void __attribute__((weak, alias("Default_Handler"))) EXTI0_IRQHandler(void);
 void __attribute__((weak, alias("Default_Handler"))) EXTI1_IRQHandler(void);
-void __attribute__((weak, alias("Default_Handler"))) NMI_Handler(void);
+void NMI_Handler(void);
 void __attribute__((weak, alias("Default_Handler"))) HardFault_Handler(void);
 void __attribute__((weak, alias("Default_Handler"))) MemManage_Handler(void);
 void __attribute__((weak, alias("Default_Handler"))) BusFault_Handler(void);
@@ -77,5 +78,16 @@ void startup_handler() {
     }
 
     main();
+}
+
+void NMI_Handler() {
+    if (LL_RCC_IsActiveFlag_HSECSS()) {
+        /* clear the interrupt flag otherwise the interrupt will be indefinitely called. */
+        LL_RCC_ClearFlag_HSECSS();
+
+        //TODO: log the event.
+
+        //TODO: configure the clock with the PLL_HSI source.
+    }
 }
 
