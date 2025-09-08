@@ -10,8 +10,6 @@ int main() {
     //TODO: what are the things which have to be absolutely powered at the
     //beginning (something about the clock?
 
-    //TODO: initialize flash latency.
-
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SYSCFG);
     LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_PWR);
