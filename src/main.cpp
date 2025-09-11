@@ -1,5 +1,5 @@
 #include "common.h"
-#include "clock_conf.h"
+#include "stm32_clock.h"
 #include "gpio.h"
 #include "temperature_humidity_sensor.h"
 #include "timer.h"

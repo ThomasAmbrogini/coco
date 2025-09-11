@@ -47,7 +47,7 @@ target_link_libraries(stm_drivers PUBLIC stm_interface)
 set(SOURCES_APPLICATION
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/vector_table.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/clock_conf.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/stm32_clock.cpp
 )
 
 add_subdirectory(temp_humidity_sensor)
