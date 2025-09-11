@@ -451,8 +451,6 @@ consteval int compute_timer_clock() {
     }
 }
 
-void measure_clock_freq();
-
 //TODO: I want to be able to know the frequeuncy of all the buses. (maybe even
 //of the single peripherals?)
 //TODO: I want to be able to retrieve the current configuration.
