@@ -19,62 +19,11 @@ int main() {
     /* SysTick_IRQn interrupt configuration */
     NVIC_SetPriority(SysTick_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),15, 0));
 
-    /* Configure the system clock */
-    //SystemClock_Config();
-
-    //TODO: I would like to have an assert on the frequeuncy of the clock to be
-    //correct.
-    //Can I also made it to a static_assert()?
-
-    //int ret = MX_TIMER_Init();
-
-    /* Initialize all configured peripherals */
-    //MX_GPIO_Init();
-    //TODO: i need to do something in case there is no sensor.
-    //volatile temp::HumTempReading reading = temp::read();
-
-    //measureClockFrequency();
     clk::clock_configuration<clk::ClockSource::PLL_HSE, clk::desired_sysclk_freq_hz>();
-    //clk::PLLConfiguration();
-
-    clk::measure_clock_freq();
 
     while (true)
     {
     }
-}
-
-/**
-  * @brief System Clock Configuration
-  * @retval None
-  */
-void SystemClock_Config(void)
-{
-  LL_FLASH_SetLatency(LL_FLASH_LATENCY_0);
-  while(LL_FLASH_GetLatency()!= LL_FLASH_LATENCY_0) {
-  }
-  LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1);
-  LL_RCC_HSI_SetCalibTrimming(16);
-  LL_RCC_HSI_Enable();
-
-   /* Wait till HSI is ready */
-  while(LL_RCC_HSI_IsReady() != 1)
-  {
-
-  }
-  LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
-  LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_1);
-  LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_1);
-  LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSI);
-
-   /* Wait till System clock is ready */
-  while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_HSI)
-  {
-
-  }
-  LL_Init1msTick(16000000);
-  LL_SetSystemCoreClock(16000000);
-  LL_RCC_SetTIMPrescaler(LL_RCC_TIM_PRESCALER_TWICE);
 }
 
 /**
