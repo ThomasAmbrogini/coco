@@ -176,5 +176,44 @@ consteval int compute_flash_latency() {
     }
 }
 
+inline void enable_HSE_switch_sys_clk() {
+    if (!LL_RCC_HSE_IsOn()) {
+        LL_RCC_HSE_Enable();
+        while(!LL_RCC_HSE_IsReady()) {
+        }
+    }
+
+    LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSE);
+    while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_HSE)
+    {
+    }
+}
+
+inline void enable_HSI_switch_sys_clk() {
+    if (!LL_RCC_HSI_IsReady()) {
+        LL_RCC_HSI_Enable();
+        while (!LL_RCC_HSI_IsReady()) {
+        }
+    }
+
+    LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSI);
+    while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_HSI)
+    {
+    }
+}
+
+inline void enable_PLL_switch_sys_clk() {
+    if (!LL_RCC_PLL_IsReady()) {
+        LL_RCC_PLL_Enable();
+        while (!LL_RCC_PLL_IsReady()) {
+        }
+    }
+
+    LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL);
+    while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL)
+    {
+    }
+}
+
 } /* namespace clk */
 

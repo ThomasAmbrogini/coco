@@ -22,53 +22,6 @@ inline constexpr int ahb_freq_hz {compute_bus_freq<ahb_prescaler>(sysclk_freq_hz
 inline constexpr int apb1_freq_hz {compute_bus_freq<apb1_prescaler>(ahb_freq_hz)};
 inline constexpr int apb2_freq_hz {compute_bus_freq<apb2_prescaler>(ahb_freq_hz)};
 
-static inline void configure_HSE() {
-    /* hse_ready is not placed to true until the HSE is not turned on. */
-    if (!LL_RCC_HSE_IsOn()) {
-        LL_RCC_HSE_Enable();
-        /*
-         * I can switch to a clock only when it is read, but it seems that even if
-         * i do it before it is actually ready, it will wait until it is ready before
-         * changing the system clock to the specified source.
-         */
-        while(!LL_RCC_HSE_IsReady()) {
-        }
-
-        /* hse on is true in here. */
-    }
-
-    LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSE);
-    while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_HSE)
-    {
-    }
-}
-
-static inline void configure_HSI() {
-    if (!LL_RCC_HSI_IsReady()) {
-        LL_RCC_HSI_Enable();
-        while (!LL_RCC_HSI_IsReady()) {
-        }
-    }
-
-    LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSI);
-    while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_HSI)
-    {
-    }
-}
-
-static inline void configure_PLL() {
-    if (!LL_RCC_PLL_IsReady()) {
-        LL_RCC_PLL_Enable();
-        while (!LL_RCC_PLL_IsReady()) {
-        }
-    }
-
-    LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL);
-    while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL)
-    {
-    }
-}
-
 /**
  * @details
  *    The system is supposed to be used statically and the frequency of the
@@ -102,14 +55,14 @@ void clock_configuration() {
     }
 
     if constexpr (_clock_source == ClockSource::HSE) {
-        configure_HSE();
+        enable_HSE_switch_sys_clk();
     } else if constexpr (_clock_source == ClockSource::HSI) {
-        configure_HSI();
+        enable_HSI_switch_sys_clk();
     } else if constexpr (_clock_source == ClockSource::PLL_HSI) {
         static constexpr PLLParams params {compute_pll_params(_desired_frequency)};
 
         LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSI, params.pllm, params.plln, params.pllp);
-        configure_PLL();
+        enable_PLL_switch_sys_clk();
     } else if constexpr (_clock_source == ClockSource::PLL_HSE) {
         static constexpr PLLParams params {compute_pll_params(_desired_frequency)};
 
@@ -119,7 +72,7 @@ void clock_configuration() {
         while(!LL_RCC_HSE_IsReady()) {
         }
 
-        configure_PLL();
+        enable_PLL_switch_sys_clk();
     }
 
     static constexpr u32 ahb_prescaler {convert_prescaler<Bus::AHB, Prescaler::div1>()};
