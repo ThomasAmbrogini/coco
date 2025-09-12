@@ -18,9 +18,9 @@
 namespace clk {
 
 inline constexpr int sysclk_freq_hz {compute_frequency(compute_pll_params(desired_sysclk_freq_hz))};
-inline constexpr int ahb_freq_hz {compute_bus_freq<Bus::AHB, ahb_prescaler>(sysclk_freq_hz)};
-inline constexpr int apb1_freq_hz {compute_bus_freq<Bus::APB1, apb1_prescaler>(sysclk_freq_hz)};
-inline constexpr int apb2_freq_hz {compute_bus_freq<Bus::APB2, apb2_prescaler>(sysclk_freq_hz)};
+inline constexpr int ahb_freq_hz {compute_bus_freq<ahb_prescaler>(sysclk_freq_hz)};
+inline constexpr int apb1_freq_hz {compute_bus_freq<apb1_prescaler>(ahb_freq_hz)};
+inline constexpr int apb2_freq_hz {compute_bus_freq<apb2_prescaler>(ahb_freq_hz)};
 
 static inline void configure_HSE() {
     /* hse_ready is not placed to true until the HSE is not turned on. */

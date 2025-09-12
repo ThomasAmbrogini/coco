@@ -157,9 +157,9 @@ consteval u32 convert_prescaler() {
     }
 }
 
-template<Bus _bus, Prescaler _prescaler>
-constexpr int compute_bus_freq(int sysclk_freq_hz) {
-    return sysclk_freq_hz / static_cast<int>(_prescaler);
+template<Prescaler _prescaler>
+constexpr int compute_bus_freq(int parent_clk_freq_hz) {
+    return parent_clk_freq_hz / static_cast<int>(_prescaler);
 }
 
 template<int _hclk_freq_hz>
