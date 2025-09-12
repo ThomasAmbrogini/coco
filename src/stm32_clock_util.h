@@ -66,112 +66,94 @@ constexpr int compute_frequency(PLLParams pll_params) {
     return (external_osc_freq_hz / pll_params.pllm) * pll_params.plln / convert_pllp_reg_value(pll_params.pllp);
 }
 
-//TODO: why do i even pass the bus if the name of the bus is on the signature.
-template<Bus _bus, Prescaler _prescaler>
-consteval u32 get_ahb_bus_prescaler_value() {
-    static_assert(_prescaler <= Prescaler::div512, "AHB bus supports up to div512 prescaler");
-
-    switch (_prescaler) {
-        case Prescaler::div1: {
-            return RCC_CFGR_HPRE_DIV1;
-        } break;
-        case Prescaler::div2: {
-            return RCC_CFGR_HPRE_DIV2;
-        } break;
-        case Prescaler::div4: {
-            return RCC_CFGR_HPRE_DIV4;
-        } break;
-        case Prescaler::div8: {
-            return RCC_CFGR_HPRE_DIV8;
-        } break;
-        case Prescaler::div16: {
-            return RCC_CFGR_HPRE_DIV16;
-        } break;
-        case Prescaler::div64: {
-            return RCC_CFGR_HPRE_DIV64;
-        } break;
-        case Prescaler::div128: {
-            return RCC_CFGR_HPRE_DIV128;
-        } break;
-        case Prescaler::div256: {
-            return RCC_CFGR_HPRE_DIV256;
-        } break;
-        case Prescaler::div512: {
-            return RCC_CFGR_HPRE_DIV256;
-        } break;
-        default: {
-        } break;
-    }
-}
-
-//TODO: why do i even pass the bus if the name of the bus is on the signature.
-template<Bus _bus, Prescaler _prescaler>
-consteval u32 get_apb1_bus_prescaler_value() {
-    static_assert(_prescaler <= Prescaler::div16, "APB1 bus supports up to div16 prescaler");
-
-    switch (_prescaler) {
-        case Prescaler::div1: {
-            return RCC_CFGR_PPRE1_DIV1;
-        } break;
-        case Prescaler::div2: {
-            return RCC_CFGR_PPRE1_DIV2;
-        } break;
-        case Prescaler::div4: {
-            return RCC_CFGR_PPRE1_DIV4;
-        } break;
-        case Prescaler::div8: {
-            return RCC_CFGR_PPRE1_DIV8;
-        } break;
-        case Prescaler::div16: {
-            return RCC_CFGR_PPRE1_DIV16;
-        } break;
-        case Prescaler::div64:
-        case Prescaler::div128:
-        case Prescaler::div256:
-        case Prescaler::div512:
-        default: {
-        } break;
-    }
-}
-
-//TODO: why do i even pass the bus if the name of the bus is on the signature.
-template<Bus _bus, Prescaler _prescaler>
-consteval u32 get_apb2_bus_prescaler_value() {
-    static_assert(_prescaler <= Prescaler::div16, "APB2 bus supports up to div16 prescaler");
-
-    switch (_prescaler) {
-        case Prescaler::div1: {
-            return RCC_CFGR_PPRE1_DIV1;
-        } break;
-        case Prescaler::div2: {
-            return RCC_CFGR_PPRE1_DIV2;
-        } break;
-        case Prescaler::div4: {
-            return RCC_CFGR_PPRE1_DIV4;
-        } break;
-        case Prescaler::div8: {
-            return RCC_CFGR_PPRE1_DIV8;
-        } break;
-        case Prescaler::div16: {
-            return RCC_CFGR_PPRE1_DIV16;
-        } break;
-        case Prescaler::div64:
-        case Prescaler::div128:
-        case Prescaler::div256:
-        case Prescaler::div512:
-        default: {
-        } break;
-    }
-}
-
 template<Bus _bus, Prescaler _prescaler>
 consteval u32 convert_prescaler() {
     if constexpr (_bus == Bus::AHB) {
-        return get_ahb_bus_prescaler_value<_bus, _prescaler>();
+        static_assert(_prescaler <= Prescaler::div512, "AHB bus supports up to div512 prescaler");
+
+        switch (_prescaler) {
+            case Prescaler::div1: {
+                return RCC_CFGR_HPRE_DIV1;
+            } break;
+            case Prescaler::div2: {
+                return RCC_CFGR_HPRE_DIV2;
+            } break;
+            case Prescaler::div4: {
+                return RCC_CFGR_HPRE_DIV4;
+            } break;
+            case Prescaler::div8: {
+                return RCC_CFGR_HPRE_DIV8;
+            } break;
+            case Prescaler::div16: {
+                return RCC_CFGR_HPRE_DIV16;
+            } break;
+            case Prescaler::div64: {
+                return RCC_CFGR_HPRE_DIV64;
+            } break;
+            case Prescaler::div128: {
+                return RCC_CFGR_HPRE_DIV128;
+            } break;
+            case Prescaler::div256: {
+                return RCC_CFGR_HPRE_DIV256;
+            } break;
+            case Prescaler::div512: {
+                return RCC_CFGR_HPRE_DIV256;
+            } break;
+            default: {
+            } break;
+        }
     } else if constexpr (_bus == Bus::APB1) {
-        return get_apb1_bus_prescaler_value<_bus, _prescaler>();
+        static_assert(_prescaler <= Prescaler::div16, "APB1 bus supports up to div16 prescaler");
+
+        switch (_prescaler) {
+            case Prescaler::div1: {
+                return RCC_CFGR_PPRE1_DIV1;
+            } break;
+            case Prescaler::div2: {
+                return RCC_CFGR_PPRE1_DIV2;
+            } break;
+            case Prescaler::div4: {
+                return RCC_CFGR_PPRE1_DIV4;
+            } break;
+            case Prescaler::div8: {
+                return RCC_CFGR_PPRE1_DIV8;
+            } break;
+            case Prescaler::div16: {
+                return RCC_CFGR_PPRE1_DIV16;
+            } break;
+            case Prescaler::div64:
+            case Prescaler::div128:
+            case Prescaler::div256:
+            case Prescaler::div512:
+            default: {
+            } break;
+        }
     } else if constexpr (_bus == Bus::APB2) {
-        return get_apb2_bus_prescaler_value<_bus, _prescaler>();
+        static_assert(_prescaler <= Prescaler::div16, "APB2 bus supports up to div16 prescaler");
+
+        switch (_prescaler) {
+            case Prescaler::div1: {
+                return RCC_CFGR_PPRE1_DIV1;
+            } break;
+            case Prescaler::div2: {
+                return RCC_CFGR_PPRE1_DIV2;
+            } break;
+            case Prescaler::div4: {
+                return RCC_CFGR_PPRE1_DIV4;
+            } break;
+            case Prescaler::div8: {
+                return RCC_CFGR_PPRE1_DIV8;
+            } break;
+            case Prescaler::div16: {
+                return RCC_CFGR_PPRE1_DIV16;
+            } break;
+            case Prescaler::div64:
+            case Prescaler::div128:
+            case Prescaler::div256:
+            case Prescaler::div512:
+            default: {
+            } break;
+        }
     }
 }
 
