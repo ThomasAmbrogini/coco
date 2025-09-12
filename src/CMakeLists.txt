@@ -57,7 +57,7 @@ target_link_libraries(TemperatureTaker PRIVATE stm_drivers)
 target_compile_options(TemperatureTaker PRIVATE "-save-temps" "-fno-exceptions" "-g"
 "-O0")
 target_compile_options(TemperatureTaker PRIVATE "-ffunction-sections" "-fdata-sections")
-target_link_options(TemperatureTaker PRIVATE "-Wl,--gc-sections" "-Wl,--print-gc-sections")
+target_link_options(TemperatureTaker PRIVATE "-Wl,--gc-sections")
 target_link_options(TemperatureTaker PUBLIC -T${CMAKE_SOURCE_DIR}/stm32f411.ld)
 target_link_libraries(TemperatureTaker PRIVATE gcc)
 target_link_libraries(TemperatureTaker PRIVATE temp_humidity)
