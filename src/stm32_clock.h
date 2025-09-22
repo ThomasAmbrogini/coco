@@ -22,6 +22,11 @@ inline constexpr int ahb_freq_hz {compute_bus_freq<ahb_prescaler>(sysclk_freq_hz
 inline constexpr int apb1_freq_hz {compute_bus_freq<apb1_prescaler>(ahb_freq_hz)};
 inline constexpr int apb2_freq_hz {compute_bus_freq<apb2_prescaler>(ahb_freq_hz)};
 
+static_assert(sysclk_freq_hz <= 100000000);
+static_assert(ahb_freq_hz <= 100000000);
+static_assert(apb1_freq_hz <= 50000000);
+static_assert(apb2_freq_hz <= 100000000);
+
 /**
  * @details
  *    The system is supposed to be used statically and the frequency of the
@@ -75,13 +80,13 @@ void clock_configuration() {
         enable_PLL_switch_sys_clk();
     }
 
-    static constexpr u32 ahb_prescaler {convert_prescaler<Bus::AHB, Prescaler::div1>()};
-    static constexpr u32 apb1_prescaler {convert_prescaler<Bus::APB1, Prescaler::div1>()};
-    static constexpr u32 apb2_prescaler {convert_prescaler<Bus::APB1, Prescaler::div1>()};
+    static constexpr u32 ahb_prescaler_reg_val {convert_prescaler<Bus::AHB, ahb_prescaler>()};
+    static constexpr u32 apb1_prescaler_reg_val {convert_prescaler<Bus::APB1, apb1_prescaler>()};
+    static constexpr u32 apb2_prescaler_reg_val {convert_prescaler<Bus::APB2, apb2_prescaler>()};
 
-    LL_RCC_SetAHBPrescaler(ahb_prescaler);
-    LL_RCC_SetAPB1Prescaler(apb1_prescaler);
-    LL_RCC_SetAPB2Prescaler(apb2_prescaler);
+    LL_RCC_SetAHBPrescaler(ahb_prescaler_reg_val);
+    LL_RCC_SetAPB1Prescaler(apb1_prescaler_reg_val);
+    LL_RCC_SetAPB2Prescaler(apb2_prescaler_reg_val);
 
     /* I am assuming that the required clock frequency for timers is the highest possible. */
     LL_RCC_SetTIMPrescaler(LL_RCC_TIM_PRESCALER_FOUR_TIMES);
