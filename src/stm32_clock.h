@@ -5,13 +5,8 @@
 #include "system_info.h"
 #include "util/math.h"
 
-#include "stm32f4xx.h"
-#include "stm32f4xx_ll_bus.h"
-#include "stm32f4xx_ll_gpio.h"
 #include "stm32f4xx_ll_pwr.h"
-#include "stm32f4xx_ll_rcc.h"
 #include "stm32f4xx_ll_system.h"
-#include "stm32f4xx_ll_utils.h"
 
 #include <limits>
 
