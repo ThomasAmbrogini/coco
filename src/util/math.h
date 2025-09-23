@@ -1,6 +1,8 @@
 #pragma once
 
-template<typename T, typename U>
+#include "type_traits.h"
+
+template<typename T, typename U = int, typename = enable_if_t<is_floating_point<T>::value>>
 constexpr U round(T num) {
     return static_cast<U>(num + 0.5);
 }
