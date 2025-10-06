@@ -21,11 +21,11 @@ int main() {
     NVIC_SetPriority(SysTick_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),15, 0));
 
     clk::clock_configuration<clk::ClockSource::PLL_HSE, clk::desired_sysclk_freq_hz>();
-    uart::configuration();
+    uart::configuration<uart::Instance::_2>();
 
     while (true)
     {
-        uart::write("HELLOOOO", sizeof("HELLOOOO"));
+        uart::write<uart::Instance::_2, uart::FrameBits::_8>("HELLOOOO", sizeof("HELLOOOO"));
     }
 }
 
