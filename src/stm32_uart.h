@@ -67,12 +67,14 @@ void configuration() {
 }
 
 void write(char single_data) {
+    //TODO: timeout which returns a fail if the write can not be done.
     while(!LL_USART_IsActiveFlag_TXE(usart_reg)) {
     }
     LL_USART_TransmitData8(usart_reg, single_data);
 }
 
 void write(const char * data, int size) {
+    //TODO: timeout which returns a fail if the write can not be done.
     for (int i = 0; i < size; ++i) {
         write(data[i]);
     }
@@ -83,6 +85,7 @@ void end_transmission() {
     }
 }
 
+//TODO: configure based on the timer instance.
 void gpio_pin_configuration() {
     LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOA);
     LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_2, LL_GPIO_MODE_ALTERNATE);
