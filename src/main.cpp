@@ -1,7 +1,8 @@
 #include "common.h"
+#include "gpio.h"
+#include "logger.h"
 #include "stm32_clock.h"
 #include "stm32_uart.h"
-#include "gpio.h"
 #include "temperature_humidity_sensor.h"
 #include "timer.h"
 
@@ -25,7 +26,9 @@ int main() {
 
     while (true)
     {
-        uart::write<uart::Instance::_2, uart::FrameBits::_8>("HELLOOOO", sizeof("HELLOOOO"));
+        log::info("HELLOOOO", sizeof("HELLOOOO"));
+        log::debug("this will not be printed", sizeof("this will not be printed"));
+        log::error("THIS IS AN ERROR", sizeof("THIS IS AN ERROR"));
     }
 }
 
