@@ -1,5 +1,6 @@
 #pragma once
 
+#include "stm32_clock.h"
 #include "util/math.h"
 #include "util/limits.h"
 #include "util/type_traits.h"
