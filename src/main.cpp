@@ -24,11 +24,14 @@ int main() {
     clk::clock_configuration<clk::ClockSource::PLL_HSE, clk::desired_sysclk_freq_hz>();
     uart::configuration<uart::Instance::_2>();
 
+    log::info("HELLOOOO", sizeof("HELLOOOO"));
+    log::debug("this will not be printed", sizeof("this will not be printed"));
+    log::error("THIS IS AN ERROR", sizeof("THIS IS AN ERROR"));
+
+    log::console_flush();
+
     while (true)
     {
-        log::info("HELLOOOO", sizeof("HELLOOOO"));
-        log::debug("this will not be printed", sizeof("this will not be printed"));
-        log::error("THIS IS AN ERROR", sizeof("THIS IS AN ERROR"));
     }
 }
 
