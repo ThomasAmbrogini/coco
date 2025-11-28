@@ -8,6 +8,8 @@
 #include "stm32f4xx_ll_dma.h"
 #include "stm32f4xx_ll_gpio.h"
 
+#define assert(expression) if(!expression) { __asm volatile("bkpt #0"); };
+
 #if defined(USE_FULL_ASSERT)
 #include "stm32_assert.h"
 #endif /* USE_FULL_ASSERT */
