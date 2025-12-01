@@ -1,12 +1,41 @@
 #pragma once
 
+//TODO: remove the uart include. Provide a register function where things where
+//we can log are passed.
 #include "stm32_uart.h"
 
 namespace log {
 
+template<uint32_t _size>
+struct DataRingBuffer {
+    char data[_size];
+    int head_lpos;
+    int tail_lpos;
+};
+
 struct Descriptor {
-    int start_idx;
-    int end_idx;
+    int start_lpos;
+    int next_lpos;
+};
+
+template<uint32_t _size>
+struct DescRingBuffer {
+    Descriptor desc[_size];
+    int head_id;
+    int tail_id;
+};
+
+template<uint32_t _data_size, uint32_t _desc_size>
+struct RingBuffer {
+    DataRingBuffer<_data_size> data_ring;
+    DescRingBuffer<_desc_size> desc_ring;
+    static constexpr auto data_size {_data_size};
+    static constexpr auto desc_size {_desc_size};
+};
+
+struct DataBlk {
+    char* data;
+    int len;
 };
 
 enum class Level {
@@ -18,20 +47,16 @@ enum class Level {
 
 inline constexpr Level log_level = Level::Info;
 
-static char s_log_queue[1000] {};
-static Descriptor s_descriptors[100] {};
+using LogRingBuffer = RingBuffer<10 * 1024, 64>;
 
-static int s_log_head {};
-static int s_log_tail {};
-
-static int s_descriptor_head {};
-static int s_descriptor_tail {};
+static LogRingBuffer _lrb;
 
 namespace {
     using uart_write_msg = void(*)(const char*, int);
     constexpr uart_write_msg uart_write = uart::write<uart::Instance::_2, uart::FrameBits::_8>;
 }
 
+//TODO: maybe we can include the c header, but provide our implementation?
 inline void memcpy(void* dst, const void* src, int size) {
     int i = 0;
     while (size > 0) {
@@ -41,34 +66,104 @@ inline void memcpy(void* dst, const void* src, int size) {
     }
 }
 
-template<Level _level>
-inline void store_log(const char* msg, int size) {
-    if constexpr (log_level <= _level) {
-        memcpy(&s_log_queue[s_log_tail], msg, size);
-        int log_start_idx = s_log_tail;
+constexpr bool wraps(int begin_lpos, int len, int size) {
+    int next_lpos = (begin_lpos % size) + len;
+    return (next_lpos > size);
+}
 
-        if ((s_log_tail + size) > (1000 - 1)) {
-            s_log_tail = size - (999 - s_log_tail);
-        } else {
-            s_log_tail += size;
-        }
+static_assert(wraps(0, 10, 20) == false);
+static_assert(wraps(15, 10, 20) == true);
+static_assert(wraps(0, 10, 10) == false);
 
-        Descriptor descriptor {log_start_idx, s_log_tail};
-
-        s_descriptors[s_descriptor_tail] = descriptor;
-        s_descriptor_tail = (s_descriptor_tail + 1) % 100;
+constexpr int get_begin_lpos(const int begin_lpos, const int len, const int size) {
+    if (wraps(begin_lpos, len, size)) {
+        const int supposed_next_lpos = begin_lpos + len;
+        return supposed_next_lpos - (supposed_next_lpos % size);
+    } else {
+        return begin_lpos;
     }
 }
 
+static_assert(get_begin_lpos(0, 10, 20) == 0);
+static_assert(get_begin_lpos(55, 10, 20) == 60);
+static_assert(get_begin_lpos(45, 10, 20) == 45);
+static_assert(get_begin_lpos(9, 1, 10) == 9);
+
+constexpr int get_next_lpos(const int begin_lpos, const int len, const int size) {
+    if (wraps(begin_lpos, len, size)) {
+        const int supposed_next_lpos = begin_lpos + len;
+        return supposed_next_lpos - (supposed_next_lpos % size) + len;
+    } else {
+        return begin_lpos + len;
+    }
+}
+
+static_assert(get_next_lpos(0, 10, 20) == 10);
+static_assert(get_next_lpos(10, 10, 20) == 20);
+static_assert(get_next_lpos(20, 10, 20) == 30);
+
+constexpr int modulo_idx(int counter, int size) {
+    return counter % size;
+}
+
+static_assert(modulo_idx(5, 10) == 5);
+static_assert(modulo_idx(15, 10) == 5);
+static_assert(modulo_idx(10, 10) == 0);
+static_assert(modulo_idx(-1, 10) == -1);
+
+//TODO: maybe a view (string_view) can be passed as argument.
+constexpr void _store_log(LogRingBuffer& lrb, const char* msg, const int len) {
+    auto& data_ring {lrb.data_ring};
+    auto& desc_ring {lrb.desc_ring};
+
+    //TODO: lock/atomic?
+
+    const int data_tail {data_ring.tail_lpos};
+    const int begin_lpos {get_begin_lpos(data_tail, len, lrb.data_size)};
+    const int next_lpos {get_next_lpos(data_tail, len, lrb.data_size)};
+    data_ring.tail_lpos = next_lpos;
+
+    const int desc_idx {desc_ring.tail_id};
+    Descriptor desc {.start_lpos {begin_lpos}, .next_lpos {next_lpos}};
+    desc_ring.desc[modulo_idx(desc_idx, lrb.desc_size)] = desc;
+    ++desc_ring.tail_id;
+
+    memcpy(&data_ring.data[modulo_idx(begin_lpos, lrb.data_size)], msg, len);
+}
+
+template<Level _level>
+//TODO: maybe a view (string_view) can be passed as argument.
+void store_log(const char* msg, const int len) {
+    if constexpr (_level >= log_level) {
+        _store_log(_lrb, msg, len);
+    }
+}
+
+DataBlk _retrieve_log(LogRingBuffer& lrb) {
+    auto& data_ring {lrb.data_ring};
+    auto& desc_ring {lrb.desc_ring};
+
+    const int desc_idx {desc_ring.head_id};
+    const Descriptor desc {desc_ring.desc[modulo_idx(desc_idx, lrb.desc_size)]};
+    const int begin_lpos {desc.start_lpos};
+    const int next_lpos {desc.next_lpos};
+    const int len {next_lpos - begin_lpos};
+
+    data_ring.head_lpos = next_lpos;
+    ++desc_ring.head_id;
+
+    return DataBlk {.data {&data_ring.data[modulo_idx(begin_lpos, lrb.data_size)]}, .len {len} };
+}
+
+DataBlk retrieve_log() {
+    return _retrieve_log(_lrb);
+}
+
 inline void console_flush() {
-    while(s_descriptor_head != s_descriptor_tail) {
-        int log_start_idx = s_descriptors[s_descriptor_head].start_idx;
-        int log_end_idx = s_descriptors[s_descriptor_head].end_idx;
-        //TODO: this is only true if log_end_idx > log_start_idx
-        int size = log_end_idx - log_start_idx;
-        const char* msg = &s_log_queue[log_start_idx];
-        uart_write(msg, size);
-        s_descriptor_head = (s_descriptor_head + 1) % 100;
+    auto& desc_ring {_lrb.desc_ring};
+    while(desc_ring.head_id != desc_ring.tail_id) {
+        const DataBlk data_blk {retrieve_log()};
+        uart_write(data_blk.data, data_blk.len);
     }
 }
 
