@@ -6,6 +6,7 @@
 #include "util/type_traits.h"
 
 #include "stm32f4xx_ll_bus.h"
+#include "stm32f4xx_ll_gpio.h"
 #include "stm32f4xx_ll_usart.h"
 
 namespace uart {
