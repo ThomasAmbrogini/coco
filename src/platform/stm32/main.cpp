@@ -1,6 +1,6 @@
 #include "common.h"
 #include "gpio.h"
-#include "logger.h"
+#include "log/log.h"
 #include "stm32_clock.h"
 #include "stm32_uart.h"
 #include "timer.h"
