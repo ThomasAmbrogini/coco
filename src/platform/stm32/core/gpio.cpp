@@ -22,7 +22,6 @@
 #include "gpio.h"
 
 #include "common.h"
-#include "temperature_humidity_sensor.h"
 #include "timer.h"
 
 #include <stdbool.h>

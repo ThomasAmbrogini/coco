@@ -3,7 +3,6 @@
 #include "logger.h"
 #include "stm32_clock.h"
 #include "stm32_uart.h"
-#include "temperature_humidity_sensor.h"
 #include "timer.h"
 
 void SystemClock_Config(void);

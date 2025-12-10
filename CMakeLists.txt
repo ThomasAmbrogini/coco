@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.28)
 
 project(temperature
     VERSION 0.0.2
@@ -8,11 +8,7 @@ project(temperature
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if(ROS_PLATFORM)
-    message("ROS_PLATFORM value: " ${ROS_PLATFORM})
-else()
-    message(FATAL_ERROR "ROS_PLATFORM is not set")
-endif()
+set(ROS_PLATFORM "Linux" CACHE STRING "Target platform for build")
 
 add_subdirectory(src)
 

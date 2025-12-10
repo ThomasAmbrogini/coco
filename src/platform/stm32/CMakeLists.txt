@@ -1,3 +1,21 @@
+add_executable(TemperatureTaker)
+
+target_sources(TemperatureTaker
+               PRIVATE
+                   ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+                   ${CMAKE_CURRENT_SOURCE_DIR}/vector_table.cpp
+                   ${CMAKE_CURRENT_SOURCE_DIR}/stm32_clock.cpp
+                   ${CMAKE_CURRENT_SOURCE_DIR}/core/gpio.cpp
+                   ${CMAKE_CURRENT_SOURCE_DIR}/core/timer.c
+                   ${CMAKE_CURRENT_SOURCE_DIR}/core/stm32f4xx_it.c
+                   ${CMAKE_CURRENT_SOURCE_DIR}/core/system_stm32f4xx.c
+                   ${CMAKE_CURRENT_SOURCE_DIR}/stm32f4xx-hal-driver/Src/stm32f4xx_ll_gpio.c
+                   ${CMAKE_CURRENT_SOURCE_DIR}/stm32f4xx-hal-driver/Src/stm32f4xx_ll_rcc.c
+                   ${CMAKE_CURRENT_SOURCE_DIR}/stm32f4xx-hal-driver/Src/stm32f4xx_ll_tim.c
+                   ${CMAKE_CURRENT_SOURCE_DIR}/stm32f4xx-hal-driver/Src/stm32f4xx_ll_utils.c
+                   ${CMAKE_CURRENT_SOURCE_DIR}/stm32f4xx-hal-driver/Src/stm32f4xx_ll_exti.c
+               )
+
 #TODO: I do not like these defines.
 set(STM_DEFINE_SYMS
     USE_FULL_LL_DRIVER
@@ -17,6 +35,8 @@ set(STM_DEFINE_SYMS
     $<$<CONFIG:Debug>:DEBUG>
 )
 
+target_compile_definitions(TemperatureTaker PRIVATE ${STM_DEFINE_SYMS})
+
 set(DEVICE_INCLUDE_DIRS
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -25,36 +45,8 @@ set(DEVICE_INCLUDE_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}/core
 )
 
-set(STM_DRIVERS_SRC
-    ${CMAKE_CURRENT_SOURCE_DIR}/core/system_stm32f4xx.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/stm32f4xx-hal-driver/Src/stm32f4xx_ll_gpio.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/stm32f4xx-hal-driver/Src/stm32f4xx_ll_rcc.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/stm32f4xx-hal-driver/Src/stm32f4xx_ll_tim.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/stm32f4xx-hal-driver/Src/stm32f4xx_ll_utils.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/stm32f4xx-hal-driver/Src/stm32f4xx_ll_exti.c
-)
+target_include_directories(TemperatureTaker PRIVATE ${DEVICE_INCLUDE_DIRS})
 
-set(STM_APPLICATION_SRC
-    ${CMAKE_CURRENT_SOURCE_DIR}/core/gpio.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/core/timer.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/core/stm32f4xx_it.c
-)
-
-add_library(stm_interface INTERFACE)
-target_include_directories(stm_interface INTERFACE ${DEVICE_INCLUDE_DIRS})
-target_compile_definitions(stm_interface INTERFACE ${STM_DEFINE_SYMS})
-
-add_library(stm_drivers STATIC ${STM_DRIVERS_SRC})
-target_link_libraries(stm_drivers PUBLIC stm_interface)
-
-set(SOURCES_APPLICATION
-    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/vector_table.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/stm32_clock.cpp
-)
-
-add_executable(TemperatureTaker ${SOURCES_APPLICATION} ${STM_APPLICATION_SRC})
-target_link_libraries(TemperatureTaker PRIVATE stm_drivers)
 target_compile_options(TemperatureTaker PRIVATE "-save-temps" "-g" "-O0")
 target_compile_options(TemperatureTaker PRIVATE "-ffunction-sections" "-fdata-sections")
 target_compile_options(TemperatureTaker PRIVATE
@@ -62,8 +54,9 @@ target_compile_options(TemperatureTaker PRIVATE
 )
 
 #TODO: this options have to be global (or at least based on the config type).
+#TODO: try to use the LINKER: syntax to make agnostic to the compiler passing
+#the options to the linker.
 target_link_options(TemperatureTaker PRIVATE "-Wl,--gc-sections")
-target_link_options(TemperatureTaker PUBLIC -T${CMAKE_SOURCE_DIR}/stm32f411.ld)
+target_link_options(TemperatureTaker PUBLIC -T${CMAKE_CURRENT_SOURCE_DIR}/stm32f411.ld)
 target_link_libraries(TemperatureTaker PRIVATE gcc)
-target_link_libraries(TemperatureTaker PRIVATE temp_humidity)
 
