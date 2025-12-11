@@ -15,7 +15,7 @@ extern "C" void Default_Handler(void) {
 
 void __attribute__((weak, alias("Default_Handler"))) EXTI0_IRQHandler(void);
 void __attribute__((weak, alias("Default_Handler"))) EXTI1_IRQHandler(void);
-void NMI_Handler(void);
+void __attribute__((weak, alias("Default_Handler"))) NMI_Handler(void);
 void __attribute__((weak, alias("Default_Handler"))) HardFault_Handler(void);
 void __attribute__((weak, alias("Default_Handler"))) MemManage_Handler(void);
 void __attribute__((weak, alias("Default_Handler"))) BusFault_Handler(void);
@@ -89,5 +89,11 @@ void NMI_Handler() {
 
         //TODO: configure the clock with the PLL_HSI source.
     }
+}
+
+void HardFault_Handler(void) {
+    volatile uint32_t* cfsr = &SCB->CFSR;
+    volatile uint32_t* hfsr = &SCB->HFSR;
+    while (1); // trap
 }
 
