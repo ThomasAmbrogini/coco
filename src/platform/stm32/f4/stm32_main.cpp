@@ -1,7 +1,6 @@
 #include "log/log.h"
 #include "stm32_clock.h"
 #include "stm32_uart.h"
-#include "stm32f411_core.h"
 
 int main() {
     //TODO: what are the things which have to be absolutely powered at the

@@ -9,5 +9,3 @@ set(CMAKE_CXX_FLAGS_INIT -ffreestanding)
 
 set(CMAKE_EXE_LINKER_FLAGS_INIT -nostdlib)
 
-set(ROS_STM32_MICRO STM32F411xE)
-
