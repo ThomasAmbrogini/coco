@@ -1,8 +1,5 @@
 #include <stdint.h>
 
-#include "stm32f4xx_ll_rcc.h"
-#include "stm32f4xx.h"
-
 static void startup_handler();
 
 int main();
@@ -78,22 +75,5 @@ void startup_handler() {
     }
 
     main();
-}
-
-void NMI_Handler() {
-    if (LL_RCC_IsActiveFlag_HSECSS()) {
-        /* clear the interrupt flag otherwise the interrupt will be indefinitely called. */
-        LL_RCC_ClearFlag_HSECSS();
-
-        //TODO: log the event.
-
-        //TODO: configure the clock with the PLL_HSI source.
-    }
-}
-
-void HardFault_Handler(void) {
-    volatile uint32_t* cfsr = &SCB->CFSR;
-    volatile uint32_t* hfsr = &SCB->HFSR;
-    while (1); // trap
 }
 
