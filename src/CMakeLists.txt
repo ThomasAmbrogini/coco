@@ -1,3 +1,9 @@
+add_library(src_common INTERFACE)
+target_include_directories(src_common
+    INTERFACE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
 message("Building for platform: " ${ROS_PLATFORM})
 
 if (ROS_PLATFORM STREQUAL "Linux")

@@ -14,19 +14,24 @@ target_sources(TemperatureTaker
 target_compile_definitions(TemperatureTaker
     PRIVATE
         ${ROS_STM32_MICRO}
+        #TODO: this has to be global
         $<$<CONFIG:Debug>:DEBUG>
 )
 
 target_include_directories(TemperatureTaker
     PRIVATE
+        #TODO: remove the current source dir when log does not have the include to uart.
         ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_SOURCE_DIR}/src
         mcu
         drivers
         core
 )
 
-target_link_libraries(TemperatureTaker PRIVATE stm32_common)
+target_link_libraries(TemperatureTaker
+    PRIVATE
+        src_common
+        stm32_common
+)
 
 target_compile_options(TemperatureTaker PRIVATE "-save-temps" "-g" "-O0")
 target_compile_options(TemperatureTaker PRIVATE "-ffunction-sections" "-fdata-sections")
