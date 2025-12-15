@@ -39,6 +39,9 @@ target_link_libraries(TemperatureTaker
     PRIVATE
         #TODO: If I am also going to use clang, gcc can not be used here.
         gcc
+
+    PRIVATE
+        project_warnings
 )
 
 target_link_options(TemperatureTaker

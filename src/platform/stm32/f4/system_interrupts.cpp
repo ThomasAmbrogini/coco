@@ -14,8 +14,6 @@ void NMI_Handler() {
 }
 
 void HardFault_Handler() {
-    volatile uint32_t* cfsr = &SCB->CFSR;
-    volatile uint32_t* hfsr = &SCB->HFSR;
     while (1);
 }
 
