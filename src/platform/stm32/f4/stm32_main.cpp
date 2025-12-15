@@ -1,6 +1,6 @@
+#include "drivers/clk/stm32_clock.h"
+#include "drivers/uart/stm32_uart.h"
 #include "log/log.h"
-#include "stm32_clock.h"
-#include "stm32_uart.h"
 
 int main() {
     //TODO: what are the things which have to be absolutely powered at the

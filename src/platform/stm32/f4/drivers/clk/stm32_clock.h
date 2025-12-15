@@ -5,8 +5,8 @@
 #include "system_info.h"
 #include "util/math.h"
 
-#include "stm32f4xx_ll_pwr.h"
-#include "stm32f4xx_ll_system.h"
+#include "drivers/ll/stm32f4xx_ll_pwr.h"
+#include "drivers/ll/stm32f4xx_ll_system.h"
 
 #include <limits>
 

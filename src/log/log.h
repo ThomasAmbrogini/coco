@@ -2,7 +2,7 @@
 
 //TODO: remove the uart include. Provide a register function where things where
 //we can log are passed.
-#include "stm32_uart.h"
+#include "drivers/uart/stm32_uart.h"
 
 namespace log {
 

@@ -4,13 +4,23 @@ target_include_directories(src_common
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-message("Building for platform: " ${ROS_PLATFORM})
+set(ROS_PLATFORM_VALUES "linux" "stm32")
+list(JOIN ROS_PLATFORM_VALUES ", " ROS_PLATFORM_VALUES_LIST)
 
-if (ROS_PLATFORM STREQUAL "Linux")
-    add_subdirectory("platform/linux")
-elseif (ROS_PLATFORM STREQUAL "stm32")
-    add_subdirectory("platform/stm32")
-else ()
-    message(FATAL_ERROR "The platform is not supported")
+set(ROS_PLATFORM "linux" CACHE STRING "Target platform for build (Values: ${ROS_PLATFORM_VALUES_LIST})")
+set_property(CACHE ROS_PLATFORM PROPERTY STRINGS
+    ${ROS_PLATFORM_VALUES}
+)
+
+if (NOT ROS_PLATFORM IN_LIST ROS_PLATFORM_VALUES)
+    list(JOIN ROS_PLATFORM_VALUES "\n  - " ROS_PLATFORM_FORMATTED_LIST)
+    message(FATAL_ERROR
+        "Invalid ROS_PLATFORM: ${ROS_PLATFORM}\n"
+        "Valid options are: \n"
+        "  - ${ROS_PLATFORM_FORMATTED_LIST}"
+    )
 endif()
+
+message("Building for platform: " ${ROS_PLATFORM})
+add_subdirectory("platform/${ROS_PLATFORM}")
 

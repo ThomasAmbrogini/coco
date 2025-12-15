@@ -1,13 +1,13 @@
 #pragma once
 
-#include "stm32_clock.h"
+#include "drivers/clk/stm32_clock.h"
 #include "util/math.h"
 #include "util/limits.h"
 #include "util/type_traits.h"
 
-#include "stm32f4xx_ll_bus.h"
-#include "stm32f4xx_ll_gpio.h"
-#include "stm32f4xx_ll_usart.h"
+#include "drivers/ll/stm32f4xx_ll_bus.h"
+#include "drivers/ll/stm32f4xx_ll_gpio.h"
+#include "drivers/ll/stm32f4xx_ll_usart.h"
 
 namespace uart {
 

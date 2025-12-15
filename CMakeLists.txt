@@ -5,10 +5,10 @@ project(temperature
     DESCRIPTION "Temperature/humidity DHT22 and STM32F411"
     LANGUAGES C CXX)
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-set(ROS_PLATFORM "Linux" CACHE STRING "Target platform for build")
 
 add_subdirectory(src)
 

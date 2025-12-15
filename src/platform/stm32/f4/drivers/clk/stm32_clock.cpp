@@ -1,9 +1,9 @@
 #include "stm32_clock.h"
 
-#include "stm32f4xx_ll_bus.h"
-#include "stm32f4xx_ll_gpio.h"
-#include "stm32f4xx_ll_rcc.h"
-#include "stm32f4xx_ll_tim.h"
+#include "drivers/ll/stm32f4xx_ll_bus.h"
+#include "drivers/ll/stm32f4xx_ll_gpio.h"
+#include "drivers/ll/stm32f4xx_ll_rcc.h"
+#include "drivers/ll/stm32f4xx_ll_tim.h"
 
 namespace clk {
 
