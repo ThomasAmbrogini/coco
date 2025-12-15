@@ -17,7 +17,7 @@ if (NOT ROS_STM32_MICRO IN_LIST ROS_STM32_MICRO_VALUES)
     )
 endif()
 
-message("Selected STM micro: ${ROS_STM32_MICRO}")
+message(STATUS "Selected STM micro: ${ROS_STM32_MICRO}")
 
 include(stm32_utils)
 

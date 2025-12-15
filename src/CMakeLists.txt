@@ -21,6 +21,6 @@ if (NOT ROS_PLATFORM IN_LIST ROS_PLATFORM_VALUES)
     )
 endif()
 
-message("Building for platform: " ${ROS_PLATFORM})
+message(STATUS "Building for platform: " ${ROS_PLATFORM})
 add_subdirectory("platform/${ROS_PLATFORM}")
 
