@@ -1,12 +1,19 @@
 #
-# The warnings enabled generally for the project
+# Functions related to project warnings
 #
 
-function(get_project_warnings project_warnings_var)
-    set(${project_warnings_var}
+function(set_interface_target_warnings target_name)
+    set(GNU_WARNINGS
         -Wall
         -Wextra
+        -Wpedantic
+        -Wshadow
     )
 
-    return(PROPAGATE ${project_warnings_var})
+    target_compile_options(${target_name}
+        INTERFACE
+            $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:GNU>>:${GNU_WARNINGS}>
+            $<$<AND:$<COMPILE_LANGUAGE:C>,$<C_COMPILER_ID:GNU>>:${GNU_WARNINGS}>
+    )
 endfunction()
+

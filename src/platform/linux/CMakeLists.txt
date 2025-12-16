@@ -5,6 +5,13 @@ target_sources(TemperatureTaker
         linux_main.cpp
 )
 
+target_link_libraries(TemperatureTaker
+    PRIVATE
+        ProjectWarnings
+)
+
 install(TARGETS TemperatureTaker
-        RUNTIME
-            DESTINATION ${CMAKE_INSTALL_BINDIR}/)
+    RUNTIME
+        DESTINATION ${CMAKE_INSTALL_BINDIR}/
+)
+

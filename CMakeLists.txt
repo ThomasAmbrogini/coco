@@ -11,12 +11,13 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(project_warnings)
-get_project_warnings(PROJECT_WARNINGS)
-add_library(project_warnings INTERFACE)
-target_compile_options(project_warnings
-    INTERFACE
-        ${PROJECT_WARNINGS}
-)
+include(project_options)
+
+add_library(ProjectWarnings INTERFACE)
+set_interface_target_warnings(ProjectWarnings)
+
+add_library(ProjectOptions INTERFACE)
+set_interface_target_options(ProjectOptions)
 
 add_subdirectory(src)
 

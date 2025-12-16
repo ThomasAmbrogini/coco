@@ -21,6 +21,13 @@ message(STATUS "Selected STM micro: ${ROS_STM32_MICRO}")
 
 include(stm32_utils)
 
+stm32_mcu_macro(${ROS_STM32_MICRO} MCU_MACRO)
+if(NOT MCU_MACRO)
+    message(FATAL_ERROR
+        "The MCU_MACRO for ${ROS_STM32_MICRO} does not exist"
+    )
+endif()
+
 stm32_micro_extract_family(${ROS_STM32_MICRO} STM32_MICRO_FAMILY)
 
 add_subdirectory(${STM32_MICRO_FAMILY})
