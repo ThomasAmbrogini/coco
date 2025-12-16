@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 4.0)
 
-project(temperature
+project(ros
     VERSION 0.0.2
     DESCRIPTION "Temperature/humidity DHT22 and STM32F411"
     LANGUAGES C CXX)
@@ -18,6 +18,8 @@ set_interface_target_warnings(ProjectWarnings)
 
 add_library(ProjectOptions INTERFACE)
 set_interface_target_options(ProjectOptions)
+
+add_executable(${PROJECT_NAME})
 
 add_subdirectory(src)
 

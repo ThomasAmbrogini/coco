@@ -1,6 +1,5 @@
-add_library(stm32_common INTERFACE)
-target_include_directories(stm32_common
-    INTERFACE
+target_include_directories(${PROJECT_NAME}
+    PRIVATE
         cmsis
 )
 
