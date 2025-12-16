@@ -5,13 +5,9 @@
 function(set_interface_target_options target_name)
     target_compile_options(${target_name}
         INTERFACE
-            "-save-temps"
-            "-g"
-            "-O0"
-
-        INTERFACE
-            "-ffunction-sections"
-            "-fdata-sections"
+            -ffunction-sections
+            -fdata-sections
+            -save-temps
             $<$<COMPILE_LANGUAGE:CXX>:-fno-threadsafe-statics>
             $<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>
     )
@@ -19,6 +15,11 @@ function(set_interface_target_options target_name)
     target_link_options(${target_name}
         INTERFACE
             "LINKER:--gc-sections"
+    )
+
+    target_compile_definitions(${target_name}
+        INTERFACE
+            $<$<CONFIG:Debug>:DEBUG>
     )
 endfunction()
 

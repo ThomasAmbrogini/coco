@@ -11,8 +11,6 @@ target_sources(TemperatureTaker
 target_compile_definitions(TemperatureTaker
     PRIVATE
         ${MCU_MACRO}
-        #TODO: this has to be global
-        $<$<CONFIG:Debug>:DEBUG>
 )
 
 target_include_directories(TemperatureTaker
