@@ -6,9 +6,6 @@ target_sources(TemperatureTaker
        vector_table.cpp
        system_interrupts.cpp
        drivers/clk/stm32_clock.cpp
-       drivers/ll/stm32f4xx_ll_gpio.c
-       drivers/ll/stm32f4xx_ll_rcc.c
-       drivers/ll/stm32f4xx_ll_tim.c
 )
 
 stm32_mcu_macro(${ROS_STM32_MICRO} MCU_MACRO)
