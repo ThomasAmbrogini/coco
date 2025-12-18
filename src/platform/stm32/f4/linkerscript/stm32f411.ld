@@ -4,6 +4,8 @@ MEMORY
     RAM   (RW) : ORIGIN = 0x20000000,   LENGTH = 128K
 }
 
+ENTRY(Reset_Handler)
+
 SECTIONS
 {
     .isr_vector :

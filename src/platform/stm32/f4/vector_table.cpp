@@ -1,7 +1,5 @@
 #include <stdint.h>
 
-static void startup_handler();
-
 int main();
 
 using Isr = void (*)();
@@ -10,6 +8,9 @@ extern "C" void Default_Handler(void) {
     while (true) {}
 }
 
+extern "C" {
+
+void __attribute__((weak, alias("Default_Handler"))) Reset_Handler(void);
 void __attribute__((weak, alias("Default_Handler"))) EXTI0_IRQHandler(void);
 void __attribute__((weak, alias("Default_Handler"))) EXTI1_IRQHandler(void);
 void __attribute__((weak, alias("Default_Handler"))) NMI_Handler(void);
@@ -18,9 +19,11 @@ void __attribute__((weak, alias("Default_Handler"))) MemManage_Handler(void);
 void __attribute__((weak, alias("Default_Handler"))) BusFault_Handler(void);
 void __attribute__((weak, alias("Default_Handler"))) UsageFault_Handler(void);
 
+}
+
 __attribute__((section(".isr_vector"))) Isr interrupt_vector_table[] = {
     (Isr) 0x20004000,
-     startup_handler,
+     Reset_Handler,
      NMI_Handler,
      HardFault_Handler,
      MemManage_Handler,

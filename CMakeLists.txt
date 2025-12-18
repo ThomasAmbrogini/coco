@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 4.0)
 project(ros
     VERSION 0.0.2
     DESCRIPTION "Temperature/humidity DHT22 and STM32F411"
-    LANGUAGES C CXX)
+    LANGUAGES C CXX ASM)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 

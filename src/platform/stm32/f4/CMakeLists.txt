@@ -1,9 +1,12 @@
 target_sources(${PROJECT_NAME}
     PRIVATE
-       stm32_main.cpp
-       vector_table.cpp
-       system_interrupts.cpp
-       drivers/clk/stm32_clock.cpp
+        mcu/startup_${ROS_STM32_MICRO}.s
+
+    PRIVATE
+        drivers/clk/stm32_clock.cpp
+        system_interrupts.cpp
+        vector_table.cpp
+        stm32_main.cpp
 
     PRIVATE
         FILE_SET HEADERS
