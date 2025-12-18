@@ -1,6 +1,7 @@
 #include "drivers/clk/stm32_clock.h"
 #include "drivers/uart/stm32_uart.h"
-#include "log/log.h"
+#include "print/print.h"
+#include "print/uart_sink.h"
 
 int main() {
     //TODO: what are the things which have to be absolutely powered at the
@@ -19,11 +20,11 @@ int main() {
     clk::clock_configuration<clk::ClockSource::PLL_HSE, clk::desired_sysclk_freq_hz>();
     uart::configuration<uart::Instance::_2>();
 
-    log::info("HELLOOOO", sizeof("HELLOOOO"));
-    log::debug("this will not be printed", sizeof("this will not be printed"));
-    log::error("THIS IS AN ERROR", sizeof("THIS IS AN ERROR"));
+    print::register_uart_sink();
 
-    log::console_flush();
+    printr("HELLOOOO", sizeof("HELLOOOO"));
+    printr("this will not be printed", sizeof("this will not be printed"));
+    printr("THIS IS AN ERROR", sizeof("THIS IS AN ERROR"));
 
     while (true)
     {

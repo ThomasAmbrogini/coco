@@ -1,9 +1,5 @@
 #pragma once
 
-//TODO: remove the uart include. Provide a register function where things where
-//we can log are passed.
-#include "drivers/uart/stm32_uart.h"
-
 namespace log {
 
 template<uint32_t _size>
@@ -46,15 +42,6 @@ enum class Level {
 };
 
 inline constexpr Level log_level = Level::Info;
-
-using LogRingBuffer = RingBuffer<10 * 1024, 64>;
-
-static LogRingBuffer _lrb;
-
-namespace {
-    using uart_write_msg = void(*)(const char*, int);
-    constexpr uart_write_msg uart_write = uart::write<uart::Instance::_2, uart::FrameBits::_8>;
-}
 
 //TODO: maybe we can include the c header, but provide our implementation?
 inline void memcpy(void* dst, const void* src, int size) {
@@ -112,39 +99,35 @@ static_assert(modulo_idx(10, 10) == 0);
 static_assert(modulo_idx(-1, 10) == -1);
 
 //TODO: maybe a view (string_view) can be passed as argument.
-constexpr void _store_log(LogRingBuffer& lrb, const char* msg, const int len) {
-    auto& data_ring {lrb.data_ring};
-    auto& desc_ring {lrb.desc_ring};
-
-    //TODO: lock/atomic?
-
-    const int data_tail {data_ring.tail_lpos};
-    const int begin_lpos {get_begin_lpos(data_tail, len, lrb.data_size)};
-    const int next_lpos {get_next_lpos(data_tail, len, lrb.data_size)};
-    data_ring.tail_lpos = next_lpos;
-
-    const int desc_idx {desc_ring.tail_id};
-    Descriptor desc {.start_lpos {begin_lpos}, .next_lpos {next_lpos}};
-    desc_ring.desc[modulo_idx(desc_idx, lrb.desc_size)] = desc;
-    ++desc_ring.tail_id;
-
-    memcpy(&data_ring.data[modulo_idx(begin_lpos, lrb.data_size)], msg, len);
-}
-
-template<Level _level>
-//TODO: maybe a view (string_view) can be passed as argument.
-void store_log(const char* msg, const int len) {
+template<Level _level, int _data_size, int _desc_size>
+constexpr void store_log(RingBuffer<_data_size, _desc_size>& rb, const char* msg, const int len) {
     if constexpr (_level >= log_level) {
-        _store_log(_lrb, msg, len);
+        auto& data_ring {rb.data_ring};
+        auto& desc_ring {rb.desc_ring};
+
+        //TODO: lock/atomic?
+
+        const int data_tail {data_ring.tail_lpos};
+        const int begin_lpos {get_begin_lpos(data_tail, len, rb.data_size)};
+        const int next_lpos {get_next_lpos(data_tail, len, rb.data_size)};
+        data_ring.tail_lpos = next_lpos;
+
+        const int desc_idx {desc_ring.tail_id};
+        Descriptor desc {.start_lpos {begin_lpos}, .next_lpos {next_lpos}};
+        desc_ring.desc[modulo_idx(desc_idx, rb.desc_size)] = desc;
+        ++desc_ring.tail_id;
+
+        memcpy(&data_ring.data[modulo_idx(begin_lpos, rb.data_size)], msg, len);
     }
 }
 
-DataBlk _retrieve_log(LogRingBuffer& lrb) {
-    auto& data_ring {lrb.data_ring};
-    auto& desc_ring {lrb.desc_ring};
+template<int _data_size, int _desc_size>
+DataBlk retrieve_log(RingBuffer<_data_size, _desc_size>& rb) {
+    auto& data_ring {rb.data_ring};
+    auto& desc_ring {rb.desc_ring};
 
     const int desc_idx {desc_ring.head_id};
-    const Descriptor desc {desc_ring.desc[modulo_idx(desc_idx, lrb.desc_size)]};
+    const Descriptor desc {desc_ring.desc[modulo_idx(desc_idx, rb.desc_size)]};
     const int begin_lpos {desc.start_lpos};
     const int next_lpos {desc.next_lpos};
     const int len {next_lpos - begin_lpos};
@@ -152,24 +135,8 @@ DataBlk _retrieve_log(LogRingBuffer& lrb) {
     data_ring.head_lpos = next_lpos;
     ++desc_ring.head_id;
 
-    return DataBlk {.data {&data_ring.data[modulo_idx(begin_lpos, lrb.data_size)]}, .len {len} };
+    return DataBlk {.data {&data_ring.data[modulo_idx(begin_lpos, rb.data_size)]}, .len {len} };
 }
-
-DataBlk retrieve_log() {
-    return _retrieve_log(_lrb);
-}
-
-inline void console_flush() {
-    auto& desc_ring {_lrb.desc_ring};
-    while(desc_ring.head_id != desc_ring.tail_id) {
-        const DataBlk data_blk {retrieve_log()};
-        uart_write(data_blk.data, data_blk.len);
-    }
-}
-
-inline constexpr auto debug = store_log<Level::Debug>;
-inline constexpr auto info  = store_log<Level::Info>;
-inline constexpr auto error = store_log<Level::Error>;
 
 } /* namespace log */
 

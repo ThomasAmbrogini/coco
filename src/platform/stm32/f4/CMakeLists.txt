@@ -4,17 +4,14 @@ target_sources(${PROJECT_NAME}
        vector_table.cpp
        system_interrupts.cpp
        drivers/clk/stm32_clock.cpp
+
+    PRIVATE
+        FILE_SET HEADERS
 )
 
 target_compile_definitions(${PROJECT_NAME}
     PRIVATE
         ${MCU_MACRO}
-)
-
-target_include_directories(${PROJECT_NAME}
-    PRIVATE
-        #TODO: remove the current source dir when log does not have the include to uart.
-        ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 target_link_libraries(${PROJECT_NAME}
