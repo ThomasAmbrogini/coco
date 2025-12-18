@@ -10,6 +10,7 @@ function(set_interface_target_options target_name)
             -save-temps
             $<$<COMPILE_LANGUAGE:CXX>:-fno-threadsafe-statics>
             $<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>
+            $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
     )
 
     target_link_options(${target_name}
