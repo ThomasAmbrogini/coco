@@ -1,6 +1,10 @@
-#include <iostream>
+#include "print/io_sink.h"
+#include "print/print.h"
 
 int main() {
-    std::cout << "Hello my man" << std::endl;
-    return 4;
+    print::register_io_sink();
+
+    printr("Hellooooo", sizeof("Hellooooo"));
+
+    return 0;
 }
