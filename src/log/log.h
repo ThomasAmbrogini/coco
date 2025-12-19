@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string.h>
+
 namespace log {
 
 template<uint32_t _size>
@@ -42,16 +44,6 @@ enum class Level {
 };
 
 inline constexpr Level log_level = Level::Info;
-
-//TODO: maybe we can include the c header, but provide our implementation?
-inline void memcpy(void* dst, const void* src, int size) {
-    int i = 0;
-    while (size > 0) {
-        ((uint8_t*) dst)[i] = ((uint8_t*) src)[i];
-        ++i;
-        --size;
-    }
-}
 
 constexpr bool wraps(int begin_lpos, int len, int size) {
     int next_lpos = (begin_lpos % size) + len;

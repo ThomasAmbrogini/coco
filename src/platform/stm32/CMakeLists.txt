@@ -1,6 +1,11 @@
-target_include_directories(${PROJECT_NAME}
+target_sources(${PROJECT_NAME}
     PRIVATE
-        cmsis
+        libc/libc_runtime.cpp
+
+    PRIVATE
+        FILE_SET HEADERS
+        BASE_DIRS
+            cmsis
 )
 
 set(ROS_STM32_MICRO_VALUES "stm32f411")
