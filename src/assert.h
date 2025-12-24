@@ -1,8 +1,14 @@
 #pragma once
 
+inline constexpr void assert(bool expression) {
 #ifdef DEBUG
-#define assert(expression) if(!expression) { __asm volatile("bkpt #0"); };
+    if (!expression) {
+#ifdef LINUX_PLATFORM
+        *(int*) 0 = 0;
 #else
-#define assert(expression) ;
+        __asm volatile("bkpt #0");
 #endif
+    }
+#endif
+}
 
