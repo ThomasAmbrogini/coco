@@ -1,6 +1,8 @@
 #pragma once
 
-using write_fun = void (*)(const char* msg, int size);
+#include "ros/string_view.h"
+
+using write_fun = void (*)(ros::StringView data);
 
 struct Sink {
     write_fun write {};

@@ -2,6 +2,7 @@
 #include "drivers/uart/stm32_uart.h"
 #include "print/print.h"
 #include "print/uart_sink.h"
+#include "ros/string_view.h"
 
 int main() {
     //TODO: what are the things which have to be absolutely powered at the
@@ -22,9 +23,9 @@ int main() {
 
     print::register_uart_sink();
 
-    printr("HELLOOOO", sizeof("HELLOOOO"));
-    printr("this will not be printed", sizeof("this will not be printed"));
-    printr("THIS IS AN ERROR", sizeof("THIS IS AN ERROR"));
+    printr("HELLOOOO");
+    printr("this will not be printed");
+    printr("THIS IS AN ERROR");
 
     while (true)
     {

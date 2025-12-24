@@ -2,6 +2,7 @@
 
 #include "print/sink.h"
 #include "print/print.h"
+#include "ros/string_view.h"
 
 #include <iostream>
 
@@ -9,8 +10,8 @@ namespace print {
 
 namespace details {
 
-void io_write(const char* msg, int size) {
-    std::cout << msg << std::endl;
+void io_write(ros::StringView data) {
+    std::cout << data.data() << std::endl;
 }
 
 } /* namespace details */

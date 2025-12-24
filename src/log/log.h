@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ros/view.h"
+#include "ros/string_view.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -32,11 +32,6 @@ struct RingBuffer {
     DescRingBuffer<_desc_size> desc_ring;
     static constexpr auto data_size {_data_size};
     static constexpr auto desc_size {_desc_size};
-};
-
-struct DataBlk {
-    char* data;
-    int len;
 };
 
 enum class Level {
@@ -95,7 +90,7 @@ static_assert(modulo_idx(-1, 10) == -1);
 
 //TODO: maybe a view (string_view) can be passed as argument.
 template<Level _level, int _data_size, int _desc_size>
-constexpr void store_log(RingBuffer<_data_size, _desc_size>& rb, ros::View<char> data) {
+constexpr void store_log(RingBuffer<_data_size, _desc_size>& rb, ros::StringView data) {
     if constexpr (_level >= log_level) {
         auto& data_ring {rb.data_ring};
         auto& desc_ring {rb.desc_ring};
@@ -117,7 +112,7 @@ constexpr void store_log(RingBuffer<_data_size, _desc_size>& rb, ros::View<char>
 }
 
 template<int _data_size, int _desc_size>
-DataBlk retrieve_log(RingBuffer<_data_size, _desc_size>& rb) {
+ros::StringView retrieve_log(RingBuffer<_data_size, _desc_size>& rb) {
     auto& data_ring {rb.data_ring};
     auto& desc_ring {rb.desc_ring};
 
@@ -130,7 +125,7 @@ DataBlk retrieve_log(RingBuffer<_data_size, _desc_size>& rb) {
     data_ring.head_lpos = next_lpos;
     ++desc_ring.head_id;
 
-    return DataBlk {.data {&data_ring.data[modulo_idx(begin_lpos, rb.data_size)]}, .len {len} };
+    return ros::StringView {&data_ring.data[modulo_idx(begin_lpos, rb.data_size)], len};
 }
 
 } /* namespace log */

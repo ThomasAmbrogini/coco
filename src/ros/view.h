@@ -14,6 +14,8 @@ public:
     using ConstPointer = const ValueType*;
     using SizeType     = int;
 
+    consteval View() = default;
+
     constexpr View(ConstPointer data, SizeType size) noexcept : __data_(data),
                                                                 __size_(size) {
         assert(__data_ != nullptr);
@@ -29,14 +31,10 @@ public:
         return __data_;
     }
 
-private:
+protected:
     ConstPointer __data_ {};
     SizeType __size_ {};
 };
 
 } /* namespace ros */
-
-inline constexpr ros::View<char> operator""_sv(const char* str, size_t len) noexcept {
-    return ros::View<char>(str, len);
-}
 

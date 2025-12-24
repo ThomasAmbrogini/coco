@@ -1,6 +1,7 @@
 #pragma once
 
 #include "drivers/clk/stm32_clock.h"
+#include "ros/string_view.h"
 #include "util/math.h"
 #include "util/limits.h"
 #include "util/type_traits.h"
@@ -129,10 +130,10 @@ void write(char frame_data) {
 //maybe it is better to have the frame_bits to be something global which is
 //used for the configuration and as parameter inside here.
 template<Instance _usart_instance, FrameBits _frame_bits>
-void write(const char * data, int size) {
+void write(ros::StringView data) {
     //TODO: timeout which returns a fail if the write can not be done.
-    for (int i = 0; i < size; ++i) {
-        write<_usart_instance, _frame_bits>(data[i]);
+    for (int i = 0; i < data.size(); ++i) {
+        write<_usart_instance, _frame_bits>(data.data()[i]);
     }
 }
 
