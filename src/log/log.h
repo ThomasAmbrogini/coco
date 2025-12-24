@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ros/view.h"
+
 #include <stdint.h>
 #include <string.h>
 
@@ -93,7 +95,7 @@ static_assert(modulo_idx(-1, 10) == -1);
 
 //TODO: maybe a view (string_view) can be passed as argument.
 template<Level _level, int _data_size, int _desc_size>
-constexpr void store_log(RingBuffer<_data_size, _desc_size>& rb, const char* msg, const int len) {
+constexpr void store_log(RingBuffer<_data_size, _desc_size>& rb, ros::View<char> data) {
     if constexpr (_level >= log_level) {
         auto& data_ring {rb.data_ring};
         auto& desc_ring {rb.desc_ring};
@@ -101,8 +103,8 @@ constexpr void store_log(RingBuffer<_data_size, _desc_size>& rb, const char* msg
         //TODO: lock/atomic?
 
         const int data_tail {data_ring.tail_lpos};
-        const int begin_lpos {get_begin_lpos(data_tail, len, rb.data_size)};
-        const int next_lpos {get_next_lpos(data_tail, len, rb.data_size)};
+        const int begin_lpos {get_begin_lpos(data_tail, data.size(), rb.data_size)};
+        const int next_lpos {get_next_lpos(data_tail, data.size(), rb.data_size)};
         data_ring.tail_lpos = next_lpos;
 
         const int desc_idx {desc_ring.tail_id};
@@ -110,7 +112,7 @@ constexpr void store_log(RingBuffer<_data_size, _desc_size>& rb, const char* msg
         desc_ring.desc[modulo_idx(desc_idx, rb.desc_size)] = desc;
         ++desc_ring.tail_id;
 
-        memcpy(&data_ring.data[modulo_idx(begin_lpos, rb.data_size)], msg, len);
+        memcpy(&data_ring.data[modulo_idx(begin_lpos, rb.data_size)], data.data(), data.size());
     }
 }
 

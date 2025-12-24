@@ -2,6 +2,7 @@
 
 #include "log/log.h"
 #include "print/sink.h"
+#include "ros/view.h"
 
 namespace {
     inline constexpr int print_data_size {10 * 1024};
@@ -25,8 +26,10 @@ void register_sink(Sink sink) {
 } /* namespace print */
 
 void printr(const char* msg, int size) {
-    store_info(s_prb, msg, size);
+    ros::View<char> data_view {msg, size};
+    store_info(s_prb, data_view);
 
+    //TODO: i do not like this check.
     auto& desc_ring {s_prb.desc_ring};
     while(desc_ring.head_id != desc_ring.tail_id) {
         const log::DataBlk data_blk {log::retrieve_log<print_data_size, print_desc_size>(s_prb)};
