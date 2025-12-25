@@ -3,6 +3,7 @@
 #include "print/print.h"
 #include "print/uart_sink.h"
 #include "ros/string_view.h"
+#include "time/time.h"
 
 int main() {
     //TODO: what are the things which have to be absolutely powered at the
@@ -22,6 +23,7 @@ int main() {
     uart::configuration<uart::Instance::_2>();
 
     print::register_uart_sink();
+    time::time_init();
 
     printr("HELLOOOO");
     printr("this will not be printed");
