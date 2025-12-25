@@ -8,7 +8,7 @@ namespace {
     inline constexpr int print_data_size {10 * 1024};
     inline constexpr int print_desc_size {64};
     using PrintRingBuffer = log::RingBuffer<print_data_size, print_desc_size>;
-    PrintRingBuffer s_prb;
+    PrintRingBuffer s_prb {};
 
     Sink s_sink {};
 
