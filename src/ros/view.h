@@ -31,6 +31,17 @@ public:
         return __data_;
     }
 
+    constexpr bool drop_first() noexcept {
+        if (__size_ > 0)
+        {
+            ++__data_;
+            --__size_;
+            return true;
+        }
+
+        return false;
+    }
+
 protected:
     ConstPointer __data_ {};
     SizeType __size_ {};

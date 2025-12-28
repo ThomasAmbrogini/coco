@@ -1,14 +1,10 @@
-#include "print/io_sink.h"
-#include "print/print.h"
-#include "ros/view.h"
+#include "print/printr.h"
 #include "ros/string_view.h"
 
 int main() {
-    print::register_io_sink();
-
-    ros::View<char> view;
-
-    printr("Helloo");
+    printr_info("Helloo");
+    printr_info("From linux");
 
     return 0;
 }
+

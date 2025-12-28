@@ -2,6 +2,12 @@
 
 namespace uart {
 
+enum class Mode {
+    Blocking,
+    Interrupt,
+    DMA,
+};
+
 enum class Instance {
     _1,
     _2,

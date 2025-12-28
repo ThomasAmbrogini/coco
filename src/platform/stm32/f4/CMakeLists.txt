@@ -4,6 +4,7 @@ target_sources(${PROJECT_NAME}
 
     PRIVATE
         drivers/clk/stm32_clock.cpp
+        print/uart_printr.cpp
         system_interrupts.cpp
         vector_table.cpp
         stm32_main.cpp

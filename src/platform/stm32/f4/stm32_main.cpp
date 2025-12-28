@@ -1,7 +1,6 @@
 #include "drivers/clk/stm32_clock.h"
 #include "drivers/uart/stm32_uart.h"
-#include "print/print.h"
-#include "print/uart_sink.h"
+#include "print/printr.h"
 #include "ros/string_view.h"
 #include "time/time.h"
 
@@ -20,14 +19,13 @@ int main() {
     NVIC_SetPriority(SysTick_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),15, 0));
 
     clk::clock_configuration<clk::ClockSource::PLL_HSE, clk::desired_sysclk_freq_hz>();
-    uart::configuration<uart::Instance::_2>();
+    uart::configuration<uart::Instance::_2, uart::Mode::Interrupt>();
 
-    print::register_uart_sink();
     time::time_init();
 
-    printr("HELLOOOO");
-    printr("this will not be printed");
-    printr("THIS IS AN ERROR");
+    printr_info("HELLOOOO");
+    printr_info("this will not be printed");
+    printr_info("THIS IS AN ERROR");
 
     while (true)
     {

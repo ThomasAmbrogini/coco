@@ -2,6 +2,7 @@
 
 #include "stm32_uart_types.h"
 #include "util/limits.h"
+#include "util/math.h"
 
 #include "drivers/ll/stm32f4xx_ll_bus.h"
 #include "drivers/ll/stm32f4xx_ll_gpio.h"

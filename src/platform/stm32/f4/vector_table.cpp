@@ -18,6 +18,7 @@ void __attribute__((weak, alias("Default_Handler"))) HardFault_Handler(void);
 void __attribute__((weak, alias("Default_Handler"))) MemManage_Handler(void);
 void __attribute__((weak, alias("Default_Handler"))) BusFault_Handler(void);
 void __attribute__((weak, alias("Default_Handler"))) UsageFault_Handler(void);
+void __attribute__((weak, alias("Default_Handler"))) USART2_Handler(void);
 
 }
 
@@ -45,7 +46,38 @@ __attribute__((section(".isr_vector"))) Isr interrupt_vector_table[] = {
     (Isr) 0x0,
     (Isr) 0x0,
     EXTI0_IRQHandler,
-    EXTI1_IRQHandler
+    EXTI1_IRQHandler,
+    (Isr) 0x0,
+    (Isr) 0x0,
+    (Isr) 0x0,
+    (Isr) 0x0,
+    (Isr) 0x0,
+    (Isr) 0x0,
+    (Isr) 0x0,
+    (Isr) 0x0,
+    (Isr) 0x0,
+    (Isr) 0x0,
+    (Isr) 0x0,
+    (Isr) 0x0,
+    (Isr) 0x0,
+    (Isr) 0x0,
+    (Isr) 0x0,
+    (Isr) 0x0,
+    (Isr) 0x0,
+    (Isr) 0x0,
+    (Isr) 0x0,
+    (Isr) 0x0,
+    (Isr) 0x0,
+    (Isr) 0x0,
+    (Isr) 0x0,
+    (Isr) 0x0,
+    (Isr) 0x0,
+    (Isr) 0x0,
+    (Isr) 0x0,
+    (Isr) 0x0,
+    (Isr) 0x0,
+    (Isr) 0x0,
+    USART2_Handler
 };
 
 extern uint8_t __bss_start;

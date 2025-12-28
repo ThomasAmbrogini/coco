@@ -9,9 +9,15 @@
 
 namespace uart {
 
+namespace impl {
+
+inline ros::StringView g_interrupt_data_msg {};
+
+} /* namespace impl */
+
 //TODO: should i just pass the known values as template params?
 //maybe it is better than using them directly from the global value.
-template<Instance _usart_instance>
+template<Instance _usart_instance, Mode _mode>
 void configuration() {
     USART_TypeDef* usart_reg = convert_inst_to_real_periph<_usart_instance>();
 
@@ -27,6 +33,12 @@ void configuration() {
 
     //TODO: 4.Select DMA enable (DMAT) in USART_CR3 if Multi buffer Communication is to take
     //place. Configure the DMA register as explained in multibuffer communication.
+
+    if constexpr (_mode == Mode::Interrupt) {
+        //TODO: interrupt priority.
+        NVIC_EnableIRQ(USART2_IRQn);
+        NVIC_SetPriority(USART2_IRQn, 5);
+    }
 
     static constexpr int desired_baud_rate {9600};
     //TODO: change the value for the divider and the baud rate and place them in a system file.
@@ -60,11 +72,18 @@ void write(char frame_data) {
 //relies on the user to specify the same info of the configuration.
 //maybe it is better to have the frame_bits to be something global which is
 //used for the configuration and as parameter inside here.
-template<Instance _usart_instance, FrameBits _frame_bits>
+template<Mode _mode, Instance _usart_instance, FrameBits _frame_bits>
 void write(ros::StringView data) {
-    //TODO: timeout which returns a fail if the write can not be done.
-    for (int i = 0; i < data.size(); ++i) {
-        write<_usart_instance, _frame_bits>(data.data()[i]);
+    if constexpr (_mode == Mode::Blocking) {
+        //TODO: timeout which returns a fail if the write can not be done.
+        for (int i = 0; i < data.size(); ++i) {
+            write<_usart_instance, _frame_bits>(data.data()[i]);
+        }
+    }
+    else if constexpr (_mode == Mode::Interrupt) {
+        impl::g_interrupt_data_msg = data;
+        USART_TypeDef* usart_reg = convert_inst_to_real_periph<_usart_instance>();
+        LL_USART_EnableIT_TXE(usart_reg);
     }
 }
 

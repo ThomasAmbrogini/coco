@@ -19,6 +19,8 @@ namespace ros {
 
 class StringView : public View<char> {
 public:
+    consteval StringView() = default;
+
     consteval StringView(ConstPointer data) noexcept {
         int size {consteval_strlen(data)};
         __data_ = data;

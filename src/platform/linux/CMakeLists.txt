@@ -1,6 +1,7 @@
 target_sources(${PROJECT_NAME}
     PRIVATE
         linux_main.cpp
+        print/io_printr.cpp
 )
 
 target_compile_definitions(${PROJECT_NAME}
