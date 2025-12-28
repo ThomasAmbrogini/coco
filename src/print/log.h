@@ -3,9 +3,10 @@
 #include "ros/string_view.h"
 
 #include <stdint.h>
+//TODO: remove once the memcpy has been removed
 #include <string.h>
 
-namespace log {
+namespace print {
 
 template<uint32_t _size>
 struct DataRingBuffer {
@@ -33,15 +34,6 @@ struct RingBuffer {
     static constexpr auto data_size {_data_size};
     static constexpr auto desc_size {_desc_size};
 };
-
-enum class Level {
-    Debug,
-    Info,
-    Error,
-    NoLog,
-};
-
-inline constexpr Level log_level = Level::Info;
 
 constexpr bool wraps(int begin_lpos, int len, int size) {
     int next_lpos = (begin_lpos % size) + len;
@@ -88,27 +80,24 @@ static_assert(modulo_idx(15, 10) == 5);
 static_assert(modulo_idx(10, 10) == 0);
 static_assert(modulo_idx(-1, 10) == -1);
 
-//TODO: maybe a view (string_view) can be passed as argument.
-template<Level _level, int _data_size, int _desc_size>
+template<int _data_size, int _desc_size>
 constexpr void store_log(RingBuffer<_data_size, _desc_size>& rb, ros::StringView data) {
-    if constexpr (_level >= log_level) {
-        auto& data_ring {rb.data_ring};
-        auto& desc_ring {rb.desc_ring};
+    auto& data_ring {rb.data_ring};
+    auto& desc_ring {rb.desc_ring};
 
-        //TODO: lock/atomic?
+    //TODO: lock/atomic?
 
-        const int data_tail {data_ring.tail_lpos};
-        const int begin_lpos {get_begin_lpos(data_tail, data.size(), rb.data_size)};
-        const int next_lpos {get_next_lpos(data_tail, data.size(), rb.data_size)};
-        data_ring.tail_lpos = next_lpos;
+    const int data_tail {data_ring.tail_lpos};
+    const int begin_lpos {get_begin_lpos(data_tail, data.size(), rb.data_size)};
+    const int next_lpos {get_next_lpos(data_tail, data.size(), rb.data_size)};
+    data_ring.tail_lpos = next_lpos;
 
-        const int desc_idx {desc_ring.tail_id};
-        Descriptor desc {.start_lpos {begin_lpos}, .next_lpos {next_lpos}};
-        desc_ring.desc[modulo_idx(desc_idx, rb.desc_size)] = desc;
-        ++desc_ring.tail_id;
+    const int desc_idx {desc_ring.tail_id};
+    Descriptor desc {.start_lpos {begin_lpos}, .next_lpos {next_lpos}};
+    desc_ring.desc[modulo_idx(desc_idx, rb.desc_size)] = desc;
+    ++desc_ring.tail_id;
 
-        memcpy(&data_ring.data[modulo_idx(begin_lpos, rb.data_size)], data.data(), data.size());
-    }
+    memcpy(&data_ring.data[modulo_idx(begin_lpos, rb.data_size)], data.data(), data.size());
 }
 
 template<int _data_size, int _desc_size>
