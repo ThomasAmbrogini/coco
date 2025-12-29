@@ -4,6 +4,8 @@
 #include "ros/string_view.h"
 #include "ros/types.h"
 
+#include "time/time.h"
+
 //TODO: remove once the memcpy has been removed
 #include <string.h>
 
@@ -81,6 +83,9 @@ static_assert(modulo_idx(15, 10) == 5);
 static_assert(modulo_idx(10, 10) == 0);
 static_assert(modulo_idx(-1, 10) == -1);
 
+volatile uint32_t sum_stores = 0;
+volatile uint32_t count_stores  = 0;
+
 /**
  * @brief stores a log inside the ring buffer.
  * @details
@@ -93,6 +98,8 @@ constexpr int store_log(RingBuffer<_data_size, _desc_size>& rb, ros::StringView 
     static_assert(_desc_size > 0);
     assert(data.data() != nullptr);
     assert(data.size() != 0);
+
+    volatile uint32_t start_tick = TIM2->CNT;
 
     auto& data_ring {rb.data_ring};
     auto& desc_ring {rb.desc_ring};
@@ -118,8 +125,23 @@ constexpr int store_log(RingBuffer<_data_size, _desc_size>& rb, ros::StringView 
 
     memcpy(&data_ring.data[modulo_idx(begin_lpos, rb.data_size)], data.data(), data.size());
 
+    volatile uint32_t end_tick = TIM2->CNT;
+
+    uint32_t diff_tick;
+    if (end_tick> start_tick) {
+        diff_tick = end_tick - start_tick;
+    } else {
+        diff_tick = 0xFFFFFFFF - start_tick + end_tick;
+    }
+
+    sum_stores += diff_tick;
+    count_stores += 1;
+
     return SUCCESS;
 }
+
+volatile uint32_t sum_retrieves {0};
+volatile uint32_t count_retrieves {0};
 
 /**
  * @brief get the next message from the ring buffer.
@@ -130,6 +152,8 @@ template<int _data_size, int _desc_size>
 ros::StringView retrieve_log(RingBuffer<_data_size, _desc_size>& rb) {
     static_assert(_data_size > 0);
     static_assert(_desc_size > 0);
+
+    volatile uint32_t start_tick = TIM2->CNT;
 
     auto& data_ring {rb.data_ring};
     auto& desc_ring {rb.desc_ring};
@@ -146,8 +170,21 @@ ros::StringView retrieve_log(RingBuffer<_data_size, _desc_size>& rb) {
 
     data_ring.head_lpos = next_lpos;
     ++desc_ring.head_id;
+    ros::StringView ret {&data_ring.data[modulo_idx(begin_lpos, rb.data_size)], len};
 
-    return ros::StringView {&data_ring.data[modulo_idx(begin_lpos, rb.data_size)], len};
+    volatile uint32_t end_tick = TIM2->CNT;
+
+    uint32_t diff_tick;
+    if (end_tick > start_tick) {
+        diff_tick = end_tick - start_tick;
+    } else {
+        diff_tick = 0xFFFFFFFF - start_tick + end_tick;
+    }
+
+    sum_retrieves += diff_tick;
+    count_retrieves += 1;
+
+    return ret;
 }
 
 } /* namespace log */

@@ -8,6 +8,9 @@ int main() {
     //TODO: what are the things which have to be absolutely powered at the
     //beginning (something about the clock?
     //TODO: Configure Flash prefetch, Instruction cache, Data cache
+    LL_FLASH_EnablePrefetch();
+    LL_FLASH_EnableDataCache();
+    LL_FLASH_EnableInstCache();
 
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SYSCFG);
