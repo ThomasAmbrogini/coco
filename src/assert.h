@@ -1,6 +1,6 @@
 #pragma once
 
-inline constexpr void assert(bool expression) {
+inline constexpr void assert([[maybe_unused]] bool expression) {
 #ifdef DEBUG
     if (!expression) {
 #ifdef LINUX_PLATFORM
