@@ -1,8 +1,8 @@
 #pragma once
 
 #include "ros/string_view.h"
+#include "ros/types.h"
 
-#include <stdint.h>
 //TODO: remove once the memcpy has been removed
 #include <string.h>
 
@@ -84,8 +84,6 @@ template<int _data_size, int _desc_size>
 constexpr void store_log(RingBuffer<_data_size, _desc_size>& rb, ros::StringView data) {
     auto& data_ring {rb.data_ring};
     auto& desc_ring {rb.desc_ring};
-
-    //TODO: lock/atomic?
 
     const int data_tail {data_ring.tail_lpos};
     const int begin_lpos {get_begin_lpos(data_tail, data.size(), rb.data_size)};

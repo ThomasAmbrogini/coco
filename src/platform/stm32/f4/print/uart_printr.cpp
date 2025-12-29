@@ -1,5 +1,5 @@
 #include "drivers/uart/stm32_uart.h"
-#include "print/log.h"
+#include "print/ring_buffer.h"
 #include "print/printr.h"
 #include "ros/string_view.h"
 
