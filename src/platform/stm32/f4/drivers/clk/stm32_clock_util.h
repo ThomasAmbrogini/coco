@@ -2,6 +2,7 @@
 
 #include "system_info.h"
 #include "system_types.h"
+#include "ros/types.h"
 #include "util/math.h"
 
 #include "drivers/ll/stm32f4xx_ll_rcc.h"
