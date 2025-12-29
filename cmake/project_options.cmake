@@ -19,7 +19,7 @@ function(set_interface_target_options target_name)
 
     target_compile_definitions(${target_name}
         INTERFACE
-            $<$<NOT:$<CONFIG:Release>>:DEBUG>
+            $<$<CONFIG:Debug>:DEBUG>
     )
 endfunction()
 
