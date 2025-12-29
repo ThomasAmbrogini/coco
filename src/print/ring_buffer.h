@@ -1,5 +1,6 @@
 #pragma once
 
+#include "assert.h"
 #include "ros/string_view.h"
 #include "ros/types.h"
 
@@ -80,10 +81,30 @@ static_assert(modulo_idx(15, 10) == 5);
 static_assert(modulo_idx(10, 10) == 0);
 static_assert(modulo_idx(-1, 10) == -1);
 
+/**
+ * @brief stores a log inside the ring buffer.
+ * @details
+ *    If a msg which does not fit inside the buffer is given, the function will
+ *    just return.
+ */
 template<int _data_size, int _desc_size>
-constexpr void store_log(RingBuffer<_data_size, _desc_size>& rb, ros::StringView data) {
+constexpr int store_log(RingBuffer<_data_size, _desc_size>& rb, ros::StringView data) {
+    static_assert(_data_size > 0);
+    static_assert(_desc_size > 0);
+    assert(data.data() != nullptr);
+    assert(data.size() != 0);
+
     auto& data_ring {rb.data_ring};
     auto& desc_ring {rb.desc_ring};
+
+    const int free_bytes {_data_size - (data_ring.tail_lpos - data_ring.head_lpos)};
+    const int num_free_desc {_desc_size - (desc_ring.tail_id - desc_ring.head_id)};
+
+    if (free_bytes < data.size()) {
+        return ERROR;
+    } else if (num_free_desc == 0) {
+        return ERROR;
+    }
 
     const int data_tail {data_ring.tail_lpos};
     const int begin_lpos {get_begin_lpos(data_tail, data.size(), rb.data_size)};
@@ -91,17 +112,31 @@ constexpr void store_log(RingBuffer<_data_size, _desc_size>& rb, ros::StringView
     data_ring.tail_lpos = next_lpos;
 
     const int desc_idx {desc_ring.tail_id};
-    Descriptor desc {.start_lpos {begin_lpos}, .next_lpos {next_lpos}};
+    const Descriptor desc {.start_lpos {begin_lpos}, .next_lpos {next_lpos}};
     desc_ring.desc[modulo_idx(desc_idx, rb.desc_size)] = desc;
     ++desc_ring.tail_id;
 
     memcpy(&data_ring.data[modulo_idx(begin_lpos, rb.data_size)], data.data(), data.size());
+
+    return SUCCESS;
 }
 
+/**
+ * @brief get the next message from the ring buffer.
+ * @return empty StringView if there were no messages, a StringView to the
+ *         message otherwise.
+ */
 template<int _data_size, int _desc_size>
 ros::StringView retrieve_log(RingBuffer<_data_size, _desc_size>& rb) {
+    static_assert(_data_size > 0);
+    static_assert(_desc_size > 0);
+
     auto& data_ring {rb.data_ring};
     auto& desc_ring {rb.desc_ring};
+
+    if (desc_ring.head_id == desc_ring.tail_id) {
+        return ros::StringView{};
+    }
 
     const int desc_idx {desc_ring.head_id};
     const Descriptor desc {desc_ring.desc[modulo_idx(desc_idx, rb.desc_size)]};
