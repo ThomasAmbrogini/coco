@@ -2,6 +2,11 @@
 
 #include <stdint.h>
 
+enum ErrorTypes {
+    ERROR   = -1,
+    SUCCESS = 0,
+};
+
 using u8 = uint8_t;
 using u16 = uint16_t;
 using u32 = uint32_t;
