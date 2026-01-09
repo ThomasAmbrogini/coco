@@ -23,7 +23,7 @@ void __attribute__((weak, alias("Default_Handler"))) USART2_Handler(void);
 }
 
 __attribute__((section(".isr_vector"))) Isr interrupt_vector_table[] = {
-    (Isr) 0x20004000,
+    (Isr) 0x20020000,
      Reset_Handler,
      NMI_Handler,
      HardFault_Handler,
