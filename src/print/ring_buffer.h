@@ -99,7 +99,9 @@ constexpr int store_log(RingBuffer<_data_size, _desc_size>& rb, ros::StringView 
     assert(data.data() != nullptr);
     assert(data.size() != 0);
 
+    __asm volatile ("" ::: "memory");
     volatile uint32_t start_tick = TIM2->CNT;
+    __asm volatile ("" ::: "memory");
 
     auto& data_ring {rb.data_ring};
     auto& desc_ring {rb.desc_ring};
@@ -125,7 +127,9 @@ constexpr int store_log(RingBuffer<_data_size, _desc_size>& rb, ros::StringView 
 
     memcpy(&data_ring.data[modulo_idx(begin_lpos, rb.data_size)], data.data(), data.size());
 
+    __asm volatile ("" ::: "memory");
     volatile uint32_t end_tick = TIM2->CNT;
+    __asm volatile ("" ::: "memory");
 
     uint32_t diff_tick;
     if (end_tick> start_tick) {
@@ -153,7 +157,9 @@ ros::StringView retrieve_log(RingBuffer<_data_size, _desc_size>& rb) {
     static_assert(_data_size > 0);
     static_assert(_desc_size > 0);
 
+    __asm volatile ("" ::: "memory");
     volatile uint32_t start_tick = TIM2->CNT;
+    __asm volatile ("" ::: "memory");
 
     auto& data_ring {rb.data_ring};
     auto& desc_ring {rb.desc_ring};
@@ -172,7 +178,9 @@ ros::StringView retrieve_log(RingBuffer<_data_size, _desc_size>& rb) {
     ++desc_ring.head_id;
     ros::StringView ret {&data_ring.data[modulo_idx(begin_lpos, rb.data_size)], len};
 
+    __asm volatile ("" ::: "memory");
     volatile uint32_t end_tick = TIM2->CNT;
+    __asm volatile ("" ::: "memory");
 
     uint32_t diff_tick;
     if (end_tick > start_tick) {
