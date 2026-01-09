@@ -1,6 +1,7 @@
 #pragma once
 
 #include "assert.h"
+#include "ros/iterator.h"
 
 #include <stddef.h>
 
@@ -9,10 +10,11 @@ namespace ros {
 template<typename _T>
 class View {
 public:
-    using ValueType    = _T;
-    using Pointer      = ValueType*;
-    using ConstPointer = const ValueType*;
-    using SizeType     = int;
+    using ValueType     = _T;
+    using Pointer       = ValueType*;
+    using ConstPointer  = const ValueType*;
+    using SizeType      = int;
+    using ConstIterator = BoundedIterator<ConstPointer>;
 
     consteval View() = default;
 
@@ -41,6 +43,24 @@ public:
 
         return false;
     }
+
+    constexpr ConstIterator begin() const noexcept {
+        return cbegin();
+    }
+
+    constexpr ConstIterator end() const noexcept {
+        return cend();
+    }
+
+    constexpr ConstIterator cbegin() const noexcept {
+        return ConstIterator(__data_, __data_ + __size_);
+    }
+
+    constexpr ConstIterator cend() const noexcept {
+        return ConstIterator(__data_ + __size_, __data_, __data_ + __size_);
+    }
+
+>>>>>>> Stashed changes
 
 protected:
     ConstPointer __data_ {};
