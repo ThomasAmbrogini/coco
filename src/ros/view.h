@@ -2,8 +2,7 @@
 
 #include "assert.h"
 #include "ros/iterator.h"
-
-#include <stddef.h>
+#include "ros/types.h"
 
 namespace ros {
 
