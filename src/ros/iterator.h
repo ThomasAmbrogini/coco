@@ -1,6 +1,7 @@
 #pragma once
 
 #include "assert.h"
+#include "ros/types.h"
 #include "util/type_displayer.h"
 
 namespace ros {
@@ -32,7 +33,7 @@ struct iterator_traits {
 
 template<typename _T>
 struct iterator_traits<_T*> {
-    using DifferenceType = std::ptrdiff_t;
+    using DifferenceType = ptrdiff_t;
     using ValueType      = _T;
     using Pointer        = ValueType*;
     using Reference      = ValueType&;

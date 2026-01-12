@@ -60,8 +60,6 @@ public:
         return ConstIterator(__data_ + __size_, __data_, __data_ + __size_);
     }
 
->>>>>>> Stashed changes
-
 protected:
     ConstPointer __data_ {};
     SizeType __size_ {};
