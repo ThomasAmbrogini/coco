@@ -12,26 +12,26 @@
 
 namespace clk {
 
-inline constexpr int sysclk_freq_hz {compute_frequency(compute_pll_params(desired_sysclk_freq_hz))};
-inline constexpr int ahb_freq_hz {compute_bus_freq<AhbPrescaler>(sysclk_freq_hz)};
-inline constexpr int apb1_freq_hz {compute_bus_freq<Apb1Prescaler>(ahb_freq_hz)};
-inline constexpr int apb2_freq_hz {compute_bus_freq<Apb2Prescaler>(ahb_freq_hz)};
+inline constexpr int SysclkFreqHz {compute_frequency(compute_pll_params(DesiredSysclkFreqHz))};
+inline constexpr int AHBFreqHz {compute_bus_freq<AhbPrescaler>(SysclkFreqHz)};
+inline constexpr int APB1FreqHz {compute_bus_freq<Apb1Prescaler>(AHBFreqHz)};
+inline constexpr int APB2FreqHz {compute_bus_freq<Apb2Prescaler>(AHBFreqHz)};
 
-static_assert(sysclk_freq_hz <= 100000000);
-static_assert(ahb_freq_hz <= 100000000);
-static_assert(apb1_freq_hz <= 50000000);
-static_assert(apb2_freq_hz <= 100000000);
+static_assert(SysclkFreqHz <= 100000000);
+static_assert(AHBFreqHz <= 100000000);
+static_assert(APB1FreqHz <= 50000000);
+static_assert(APB2FreqHz <= 100000000);
 
 /**
  * @details
  *    The system is supposed to be used statically and the frequency of the
  *    system is not supposed to change after initialization.
  */
-template<clock_source _clock_source, int _desired_frequency>
+template<clock_source _ClockSource, int _DesiredFrequency>
 void clock_configuration() {
-    static constexpr bool AceleratingFreq {_desired_frequency > starting_core_freq_hz};
+    static constexpr bool AceleratingFreq {_DesiredFrequency > StartingCoreFreqHz};
     if constexpr (AceleratingFreq) {
-        static constexpr int NumWaitStates {compute_flash_latency<sysclk_freq_hz>()};
+        static constexpr int NumWaitStates {compute_flash_latency<SysclkFreqHz>()};
 
         LL_FLASH_SetLatency(NumWaitStates);
         while(LL_FLASH_GetLatency() != NumWaitStates) {
@@ -44,27 +44,27 @@ void clock_configuration() {
     //possible to see the voltages at which the CPU will run based on the voltage
     //scale.
     /* THESE BITS CAN ONLY BE MODIFIED WHEN THE PLL IS OFF. */
-    if constexpr ((_clock_source == clock_source::PLL_HSI) || (_clock_source == clock_source::PLL_HSE)) {
-        if constexpr (ahb_freq_hz <= 64000000) {
+    if constexpr ((_ClockSource == clock_source::PLL_HSI) || (_ClockSource == clock_source::PLL_HSE)) {
+        if constexpr (AHBFreqHz <= 64000000) {
             LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE3);
-        } else if constexpr (ahb_freq_hz <= 84000000) {
+        } else if constexpr (AHBFreqHz <= 84000000) {
             LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE2);
-        } else if constexpr (ahb_freq_hz <= 100000000) {
+        } else if constexpr (AHBFreqHz <= 100000000) {
             LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1);
         }
     }
 
-    if constexpr (_clock_source == clock_source::HSE) {
+    if constexpr (_ClockSource == clock_source::HSE) {
         enable_HSE_switch_sys_clk();
-    } else if constexpr (_clock_source == clock_source::HSI) {
+    } else if constexpr (_ClockSource == clock_source::HSI) {
         enable_HSI_switch_sys_clk();
-    } else if constexpr (_clock_source == clock_source::PLL_HSI) {
-        static constexpr pll_params Params {compute_pll_params(_desired_frequency)};
+    } else if constexpr (_ClockSource == clock_source::PLL_HSI) {
+        static constexpr pll_params Params {compute_pll_params(_DesiredFrequency)};
 
         LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSI, Params.Pllm, Params.Plln, Params.Pllp);
         enable_PLL_switch_sys_clk();
-    } else if constexpr (_clock_source == clock_source::PLL_HSE) {
-        static constexpr pll_params Params {compute_pll_params(_desired_frequency)};
+    } else if constexpr (_ClockSource == clock_source::PLL_HSE) {
+        static constexpr pll_params Params {compute_pll_params(_DesiredFrequency)};
 
         LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSE, Params.Pllm, Params.Plln, Params.Pllp);
 
@@ -90,12 +90,12 @@ void clock_configuration() {
     //the feature to fallback in case the HSE fails?
     //TODO: if i am using the pll with HSE as source, and the HSE fails, can i
     //use the PLL with the HSI?
-    if constexpr ((_clock_source != clock_source::HSI) && (_clock_source != clock_source::PLL_HSI)) {
+    if constexpr ((_ClockSource != clock_source::HSI) && (_ClockSource != clock_source::PLL_HSI)) {
         LL_RCC_HSI_Disable();
     }
 
     if constexpr (!AceleratingFreq) {
-        static constexpr int NumWaitStates {compute_flash_latency<sysclk_freq_hz>()};
+        static constexpr int NumWaitStates {compute_flash_latency<SysclkFreqHz>()};
 
         LL_FLASH_SetLatency(NumWaitStates);
         while(LL_FLASH_GetLatency()!= NumWaitStates) {

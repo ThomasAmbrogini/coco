@@ -43,7 +43,7 @@ void configuration() {
     static constexpr int DesiredBaudRate {9600};
     //TODO: change the value for the divider and the baud rate and place them in a system file.
     //TODO: the value of the clock used depends on the peripheral.
-    static constexpr uint16_t BrrRegVal {compute_brr_val<DesiredBaudRate, clk::apb1_freq_hz, 16>()};
+    static constexpr uint16_t BrrRegVal {compute_brr_val<DesiredBaudRate, clk::APB1FreqHz, 16>()};
     UsartReg->BRR = BrrRegVal;
 
     LL_USART_EnableDirectionTx(UsartReg);

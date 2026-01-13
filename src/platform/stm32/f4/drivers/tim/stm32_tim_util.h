@@ -32,17 +32,17 @@ consteval int compute_timer_clock() {
     if constexpr (!_TimPre) {
         if constexpr (TimBus == bus::APB2) {
             if constexpr (Apb2Prescaler == prescaler::div1) {
-                return ahb_freq_hz;
+                return AHBFreqHz;
             } else {
-                return apb2_freq_hz * 2;
+                return APB2FreqHz * 2;
             }
         }
     } else {
         if constexpr (TimBus == bus::APB2) {
             if constexpr ((Apb2Prescaler == prescaler::div1) || (Apb2Prescaler == prescaler::div2)) {
-                return ahb_freq_hz;
+                return AHBFreqHz;
             } else {
-                return apb2_freq_hz * 4;
+                return APB2FreqHz * 4;
             }
         }
     }

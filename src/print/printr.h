@@ -18,11 +18,11 @@ enum struct level {
 } /* namespace print */
 
 //TODO: in some configuration file.
-inline constexpr print::level print_level {print::level::Info};
+inline constexpr print::level PrintLevel {print::level::Info};
 
 template<print::level _Level>
 void printr(ros::string_view Msg) {
-    if constexpr (_Level >= print_level) {
+    if constexpr (_Level >= PrintLevel) {
         print::impl::printr(Msg);
     }
 }

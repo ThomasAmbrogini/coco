@@ -4,8 +4,8 @@
 
 namespace clk {
 
-inline constexpr int desired_sysclk_freq_hz = 100000000;
-static_assert(desired_sysclk_freq_hz <= 100000000, "The maximum frequency for the core is 100MHz");
+inline constexpr int DesiredSysclkFreqHz = 100000000;
+static_assert(DesiredSysclkFreqHz <= 100000000, "The maximum frequency for the core is 100MHz");
 
 inline constexpr prescaler AhbPrescaler = prescaler::div1;
 static_assert(AhbPrescaler <= prescaler::div512, "The maximum prescaler for ahb is div512");

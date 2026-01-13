@@ -21,7 +21,7 @@ int main() {
     /* SysTick_IRQn interrupt configuration */
     NVIC_SetPriority(SysTick_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),15, 0));
 
-    clk::clock_configuration<clk::clock_source::PLL_HSE, clk::desired_sysclk_freq_hz>();
+    clk::clock_configuration<clk::clock_source::PLL_HSE, clk::DesiredSysclkFreqHz>();
     uart::configuration<uart::instance::_2, uart::mode::Interrupt>();
 
     time::time_init();

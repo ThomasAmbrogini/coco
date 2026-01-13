@@ -16,23 +16,14 @@ can be useful can be reimplemented manually.
 
 ### Linux (host testing)
 ```bash
-# Configure
-cmake -B build_linux -DROS_PLATFORM=linux -S .
-
 # Build
-cmake --build build_linux
+cmake --build build_linux --config Debug
 ```
 
 ### STM32 (cross-compile)
 ```bash
-# Add ARM toolchain to PATH first
-source env.sh  # or: export PATH=$PATH:/opt/arm-gnu-toolchain-15.2.rel1-x86_64-arm-none-eabi/bin/
-
-# Configure
-cmake --toolchain cmake/toolchain/stm32f411.cmake -B build -DROS_PLATFORM=stm32 -DROS_STM32_MICRO=stm32f411 -S .
-
 # Build
-cmake --build build
+cmake --build build --config Debug
 ```
 
 ## Architecture
@@ -88,4 +79,4 @@ cmake --build build
 | Template type parameters | _T, _It | `template<typename _T>` |
 | Template value parameters | _PascalCase | `template<int _Size>` |
 | Enum values | PascalCase | `clock_source::PLL_HSE`, `level::Info` |
-| Constants (constexpr config) | snake_case | `print_level`, `desired_sysclk_freq_hz` |
+| Inline constexpr variables | PascalCase | `PrintLevel`, `DesiredSysclkFreqHz` |

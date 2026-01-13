@@ -33,14 +33,14 @@ static_assert(convert_pllp_reg_value(3 << RCC_PLLCFGR_PLLP_Pos) == 8);
 //TODO: the oscillator should be a variable.
 constexpr pll_params compute_pll_params(int DesiredFreqHz) {
     pll_params Ret {};
-    constexpr int PllmStart {external_osc_freq_hz / max_vco_freq};
-    constexpr int PllmEnd {external_osc_freq_hz / min_vco_freq};
+    constexpr int PllmStart {ExternalOscFreqHz / MaxVCOFreq};
+    constexpr int PllmEnd {ExternalOscFreqHz / MinVCOFreq};
 
     int MinErr = std::numeric_limits<int>::max();
     for (int Pllm = PllmStart; Pllm < PllmEnd; ++Pllm) {
-        int VcoFreq = round_to_closest_int(external_osc_freq_hz, Pllm);
-        for (int Plln = min_plln; Plln < max_plln; ++Plln) {
-            for (int Pllp = min_pllp; Pllp < max_pllp; Pllp+=2) {
+        int VcoFreq = round_to_closest_int(ExternalOscFreqHz, Pllm);
+        for (int Plln = MinPLLN; Plln < MaxPLLN; ++Plln) {
+            for (int Pllp = MinPLLP; Pllp < MaxPLLP; Pllp+=2) {
                 int OutputFrequency = round_to_closest_int(VcoFreq * Plln, Pllp);
                 if (OutputFrequency == DesiredFreqHz) {
                     return pll_params{Pllm, Plln, convert_pllp_to_reg_value(Pllp)};
@@ -64,7 +64,7 @@ constexpr int compute_frequency(pll_params PllParams) {
      * output_frequency = vco_freq * plln / pllp;
      * vco_freq = input_freq / pllm;
      */
-    return (external_osc_freq_hz / PllParams.Pllm) * PllParams.Plln / convert_pllp_reg_value(PllParams.Pllp);
+    return (ExternalOscFreqHz / PllParams.Pllm) * PllParams.Plln / convert_pllp_reg_value(PllParams.Pllp);
 }
 
 template<bus _Bus, prescaler _Prescaler>
@@ -163,16 +163,16 @@ constexpr int compute_bus_freq(int ParentClkFreqHz) {
     return ParentClkFreqHz / static_cast<int>(_Prescaler);
 }
 
-template<int _HclkFreqHz>
+template<int _HCLKFreqHz>
 consteval int compute_flash_latency() {
-    static_assert(_HclkFreqHz > 0 && _HclkFreqHz  <= 100000000, "The HCLK freq is too high");
-    if constexpr (_HclkFreqHz > 0 && _HclkFreqHz <= 30000000) {
+    static_assert(_HCLKFreqHz > 0 && _HCLKFreqHz  <= 100000000, "The HCLK freq is too high");
+    if constexpr (_HCLKFreqHz > 0 && _HCLKFreqHz <= 30000000) {
         return 0;
-    } else if constexpr ((_HclkFreqHz > 30000000) && (_HclkFreqHz <= 64000000)) {
+    } else if constexpr ((_HCLKFreqHz > 30000000) && (_HCLKFreqHz <= 64000000)) {
         return 1;
-    } else if constexpr ((_HclkFreqHz > 64000000) && (_HclkFreqHz <= 90000000)) {
+    } else if constexpr ((_HCLKFreqHz > 64000000) && (_HCLKFreqHz <= 90000000)) {
         return 2;
-    } else if constexpr ((_HclkFreqHz > 90000000) && (_HclkFreqHz <= 100000000)) {
+    } else if constexpr ((_HCLKFreqHz > 90000000) && (_HCLKFreqHz <= 100000000)) {
         return 3;
     }
 }
