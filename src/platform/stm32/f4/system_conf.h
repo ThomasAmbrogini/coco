@@ -7,14 +7,14 @@ namespace clk {
 inline constexpr int desired_sysclk_freq_hz = 100000000;
 static_assert(desired_sysclk_freq_hz <= 100000000, "The maximum frequency for the core is 100MHz");
 
-inline constexpr Prescaler ahb_prescaler = Prescaler::div1;
-static_assert(ahb_prescaler <= Prescaler::div512, "The maximum prescaler for ahb is div512");
-inline constexpr Prescaler apb1_prescaler = Prescaler::div2;
-static_assert(apb1_prescaler <= Prescaler::div16, "The maximum prescaler for apb1 is div16");
-inline constexpr Prescaler apb2_prescaler = Prescaler::div1;
-static_assert(apb2_prescaler <= Prescaler::div16, "The maximum prescaler for apb2 is div16");
+inline constexpr prescaler AhbPrescaler = prescaler::div1;
+static_assert(AhbPrescaler <= prescaler::div512, "The maximum prescaler for ahb is div512");
+inline constexpr prescaler Apb1Prescaler = prescaler::div2;
+static_assert(Apb1Prescaler <= prescaler::div16, "The maximum prescaler for apb1 is div16");
+inline constexpr prescaler Apb2Prescaler = prescaler::div1;
+static_assert(Apb2Prescaler <= prescaler::div16, "The maximum prescaler for apb2 is div16");
 
-inline constexpr bool clock_security_system_enabled {true};
+inline constexpr bool ClockSecuritySystemEnabled {true};
 
 } /* namespace clk */
 

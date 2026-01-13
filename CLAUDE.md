@@ -68,8 +68,24 @@ cmake --build build
 - `ROS_STM32_MICRO`: STM32 variant (currently `stm32f411`)
 
 ## Coding Conventions
-- Namespace `ros::` for custom types which can be used thorughout the codebase.
-- CMSIS and LL drivers are used directly (no HAL abstraction), but an
-  intermediate abstraction is created appositely in a constexpr way.
+
+### General
+- Namespace `ros::` for custom types used throughout the codebase
+- CMSIS and LL drivers are used directly (no HAL abstraction), with constexpr intermediate abstractions
 - C++23 features: `consteval`, `constexpr` constructors, concepts-ready
 
+### Naming Conventions
+
+| Element | Style | Example |
+|---------|-------|---------|
+| Functions | snake_case | `compute_pll_params()`, `get_time_ms()` |
+| Classes/Structs/Enums | snake_case | `string_view`, `ring_buffer`, `clock_source` |
+| Type aliases | snake_case | `value_type`, `const_pointer`, `iterator_type` |
+| Variables | PascalCase | `Data`, `StartTick`, `NumWaitStates` |
+| Private members | PascalCase_ | `Data_`, `Size_`, `Current_` |
+| Function-like constexpr variables | snake_case | `printr_info`, `uart_write_interrupt` |
+| Trait members (::value) | snake_case | `is_floating_point::value` |
+| Template type parameters | _T, _It | `template<typename _T>` |
+| Template value parameters | _PascalCase | `template<int _Size>` |
+| Enum values | PascalCase | `clock_source::PLL_HSE`, `level::Info` |
+| Constants (constexpr config) | snake_case | `print_level`, `desired_sysclk_freq_hz` |

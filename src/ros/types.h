@@ -3,7 +3,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-enum ErrorTypes {
+enum error_types {
     ERROR   = -1,
     SUCCESS = 0,
 };

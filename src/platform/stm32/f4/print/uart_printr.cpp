@@ -5,62 +5,62 @@
 
 namespace {
 
-inline constexpr auto uart_write_blocking = uart::write<uart::Mode::Blocking, uart::Instance::_2, uart::FrameBits::_8>;
-inline constexpr auto uart_write_interrupt = uart::write<uart::Mode::Interrupt, uart::Instance::_2, uart::FrameBits::_8>;
+inline constexpr auto uart_write_blocking = uart::write<uart::mode::Blocking, uart::instance::_2, uart::frame_bits::_8>;
+inline constexpr auto uart_write_interrupt = uart::write<uart::mode::Interrupt, uart::instance::_2, uart::frame_bits::_8>;
 
-inline constexpr int print_data_size {10 * 1024};
-inline constexpr int print_desc_size {64};
-using PrintRingBuffer = print::RingBuffer<print_data_size, print_desc_size>;
-PrintRingBuffer s_prb {};
+inline constexpr int PrintDataSize {10 * 1024};
+inline constexpr int PrintDescSize {64};
+using print_ring_buffer = print::ring_buffer<PrintDataSize, PrintDescSize>;
+print_ring_buffer SPrb {};
 
-inline constexpr auto print_store_log = print::store_log<print_data_size, print_desc_size>;
-inline constexpr auto print_retrieve_log = print::retrieve_log<print_data_size, print_desc_size>;
+inline constexpr auto print_store_log = print::store_log<PrintDataSize, PrintDescSize>;
+inline constexpr auto print_retrieve_log = print::retrieve_log<PrintDataSize, PrintDescSize>;
 
 }
 
 namespace print::impl {
 
-void printr(ros::StringView msg) {
-    print_store_log(s_prb, msg);
+void printr(ros::string_view Msg) {
+    print_store_log(SPrb, Msg);
 
-    if (uart::impl::g_interrupt_data_msg.size() == 0)
+    if (uart::impl::GInterruptDataMsg.size() == 0)
     {
-        ros::StringView data {print_retrieve_log(s_prb)};
-        uart_write_interrupt(data);
+        ros::string_view Data {print_retrieve_log(SPrb)};
+        uart_write_interrupt(Data);
     }
 }
 
 } /* namespace print::impl */
 
 extern "C" void USART2_Handler() {
-    const uint32_t data_register_empty {LL_USART_IsActiveFlag_TXE(USART2)};
-    const uint32_t transmission_comp   {LL_USART_IsActiveFlag_TC(USART2)};
-    const uint32_t it_txe_enabled      {LL_USART_IsEnabledIT_TXE(USART2)};
-    const uint32_t it_tc_enabled       {LL_USART_IsEnabledIT_TC(USART2)};
+    const uint32_t DataRegisterEmpty {LL_USART_IsActiveFlag_TXE(USART2)};
+    const uint32_t TransmissionComp   {LL_USART_IsActiveFlag_TC(USART2)};
+    const uint32_t ItTxeEnabled      {LL_USART_IsEnabledIT_TXE(USART2)};
+    const uint32_t ItTcEnabled       {LL_USART_IsEnabledIT_TC(USART2)};
 
-    if (data_register_empty && it_txe_enabled) {
-        const ros::StringView data {uart::impl::g_interrupt_data_msg};
+    if (DataRegisterEmpty && ItTxeEnabled) {
+        const ros::string_view Data {uart::impl::GInterruptDataMsg};
 
-        if (data.size() > 0)
+        if (Data.size() > 0)
         {
             //TODO: get a method to take the char.
-            uart::write<uart::Instance::_2, uart::FrameBits::_8>(data.data()[0]);
+            uart::write<uart::instance::_2, uart::frame_bits::_8>(Data.data()[0]);
         }
 
-        uart::impl::g_interrupt_data_msg.drop_first();
-        if (uart::impl::g_interrupt_data_msg.size() == 0)
+        uart::impl::GInterruptDataMsg.drop_first();
+        if (uart::impl::GInterruptDataMsg.size() == 0)
         {
             LL_USART_DisableIT_TXE(USART2);
             LL_USART_EnableIT_TC(USART2);
         }
     }
 
-    if (transmission_comp && it_tc_enabled) {
+    if (TransmissionComp && ItTcEnabled) {
         //TODO: another way to check this.
-        if (s_prb.desc_ring.head_id != s_prb.desc_ring.tail_id)
+        if (SPrb.DescRing.HeadId != SPrb.DescRing.TailId)
         {
-            const ros::StringView data {print_retrieve_log(s_prb)};
-            uart_write_interrupt(data);
+            const ros::string_view Data {print_retrieve_log(SPrb)};
+            uart_write_interrupt(Data);
             LL_USART_EnableIT_TXE(USART2);
         }
 

@@ -1,6 +1,6 @@
 #pragma once
 
-template<bool _condition>
+template<bool _Condition>
 struct enable_if;
 
 template<>
@@ -8,8 +8,8 @@ struct enable_if<true> {
     using type = void;
 };
 
-template<bool _condition>
-using enable_if_t = enable_if<_condition>::type;
+template<bool _Condition>
+using enable_if_t = enable_if<_Condition>::type;
 
 template<typename T>
 struct is_floating_point {

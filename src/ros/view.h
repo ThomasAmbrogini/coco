@@ -7,61 +7,61 @@
 namespace ros {
 
 template<typename _T>
-class View {
+class view {
 public:
-    using ValueType     = _T;
-    using Pointer       = ValueType*;
-    using ConstPointer  = const ValueType*;
-    using SizeType      = int;
-    using ConstIterator = BoundedIterator<ConstPointer>;
+    using value_type      = _T;
+    using pointer         = value_type*;
+    using const_pointer   = const value_type*;
+    using size_type       = int;
+    using const_iterator  = bounded_iterator<const_pointer>;
 
-    consteval View() = default;
+    consteval view() = default;
 
-    constexpr View(ConstPointer data, SizeType size) noexcept : __data_(data),
-                                                                __size_(size) {
-        assert(__data_ != nullptr);
-        assert(__size_ > 0);
+    constexpr view(const_pointer Data, size_type Size) noexcept : Data_(Data),
+                                                                  Size_(Size) {
+        assert(Data_ != nullptr);
+        assert(Size_ > 0);
     }
 
-    constexpr SizeType size() const noexcept {
-        return __size_;
+    constexpr size_type size() const noexcept {
+        return Size_;
     }
 
     //TODO: maybe i never need to direclty access the data.
-    constexpr ConstPointer data() const noexcept {
-        return __data_;
+    constexpr const_pointer data() const noexcept {
+        return Data_;
     }
 
     constexpr bool drop_first() noexcept {
-        if (__size_ > 0)
+        if (Size_ > 0)
         {
-            ++__data_;
-            --__size_;
+            ++Data_;
+            --Size_;
             return true;
         }
 
         return false;
     }
 
-    constexpr ConstIterator begin() const noexcept {
+    constexpr const_iterator begin() const noexcept {
         return cbegin();
     }
 
-    constexpr ConstIterator end() const noexcept {
+    constexpr const_iterator end() const noexcept {
         return cend();
     }
 
-    constexpr ConstIterator cbegin() const noexcept {
-        return ConstIterator(__data_, __data_ + __size_);
+    constexpr const_iterator cbegin() const noexcept {
+        return const_iterator(Data_, Data_ + Size_);
     }
 
-    constexpr ConstIterator cend() const noexcept {
-        return ConstIterator(__data_ + __size_, __data_, __data_ + __size_);
+    constexpr const_iterator cend() const noexcept {
+        return const_iterator(Data_ + Size_, Data_, Data_ + Size_);
     }
 
 protected:
-    ConstPointer __data_ {};
-    SizeType __size_ {};
+    const_pointer Data_ {};
+    size_type Size_ {};
 };
 
 } /* namespace ros */

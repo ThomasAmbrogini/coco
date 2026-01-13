@@ -2,7 +2,7 @@
 
 namespace clk {
 
-enum class Prescaler {
+enum class prescaler {
     div1 = 1,
     div2 = 2,
     div4 = 4,
@@ -14,19 +14,19 @@ enum class Prescaler {
     div512 = 512,
 };
 
-struct PLLParams {
-    int pllm;
-    int plln;
-    int pllp;
+struct pll_params {
+    int Pllm;
+    int Plln;
+    int Pllp;
 };
 
-enum class Bus {
+enum class bus {
     AHB,
     APB1,
     APB2,
 };
 
-enum class ClockSource {
+enum class clock_source {
     HSI,
     HSE,
     PLL_HSI,
@@ -38,7 +38,7 @@ enum class ClockSource {
 namespace tim {
 
 //TODO: add the other timer instances.
-enum class TimerInstance {
+enum class timer_instance {
     Timer1,
 };
 

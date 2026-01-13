@@ -2,19 +2,19 @@
 
 namespace uart {
 
-enum class Mode {
+enum class mode {
     Blocking,
     Interrupt,
     DMA,
 };
 
-enum class Instance {
+enum class instance {
     _1,
     _2,
     _6,
 };
 
-enum class FrameBits {
+enum class frame_bits {
     _8,
     _9,
 };

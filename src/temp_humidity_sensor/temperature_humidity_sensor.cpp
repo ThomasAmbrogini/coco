@@ -18,38 +18,38 @@ typedef enum {
     DECODE_DATA,
 
     ERROR
-} ReadStates;
+} read_states;
 
 void init() {
 
 }
 
 void takeGpioAsOutput() {
-  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+  LL_GPIO_InitTypeDef GpioInitStruct = {0};
 
   LL_GPIO_ResetOutputPin(TEMPERATURE_HUMIDITY_GPIO_Port, TEMPERATURE_HUMIDITY_Pin);
 
   /**/
-  GPIO_InitStruct.Pin = TEMPERATURE_HUMIDITY_Pin;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+  GpioInitStruct.Pin = TEMPERATURE_HUMIDITY_Pin;
+  GpioInitStruct.Mode = LL_GPIO_MODE_OUTPUT;
+  GpioInitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+  GpioInitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GpioInitStruct.Pull = LL_GPIO_PULL_NO;
 
-  LL_GPIO_Init(TEMPERATURE_HUMIDITY_GPIO_Port, &GPIO_InitStruct);
+  LL_GPIO_Init(TEMPERATURE_HUMIDITY_GPIO_Port, &GpioInitStruct);
 }
 
-void letGpioToSensor(bool interrupt_mode) {
-    LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+void letGpioToSensor(bool InterruptMode) {
+    LL_GPIO_InitTypeDef GpioInitStruct = {0};
 
     /**/
     LL_GPIO_ResetOutputPin(TEMPERATURE_HUMIDITY_GPIO_Port, TEMPERATURE_HUMIDITY_Pin);
 
-    GPIO_InitStruct.Pin = TEMPERATURE_HUMIDITY_Pin;
-    GPIO_InitStruct.Mode = LL_GPIO_MODE_INPUT;
-    GPIO_InitStruct.Pull = LL_GPIO_PULL_UP;
+    GpioInitStruct.Pin = TEMPERATURE_HUMIDITY_Pin;
+    GpioInitStruct.Mode = LL_GPIO_MODE_INPUT;
+    GpioInitStruct.Pull = LL_GPIO_PULL_UP;
 
-    if (interrupt_mode) {
+    if (InterruptMode) {
         SYSCFG->EXTICR[0] &= ~SYSCFG_EXTICR1_EXTI1;
         SYSCFG->EXTICR[0] |= SYSCFG_EXTICR1_EXTI1_PA;
         NVIC_SetPriority(EXTI1_IRQn, 0);
@@ -59,71 +59,71 @@ void letGpioToSensor(bool interrupt_mode) {
         LL_EXTI_EnableIT_0_31(LL_EXTI_LINE_1);
     }
 
-    LL_GPIO_Init(TEMPERATURE_HUMIDITY_GPIO_Port, &GPIO_InitStruct);
+    LL_GPIO_Init(TEMPERATURE_HUMIDITY_GPIO_Port, &GpioInitStruct);
 }
 
 uint32_t timeHighLevel() {
-    uint32_t start_ticks = getCurrentUsTick();
+    uint32_t StartTicks = getCurrentUsTick();
     while(LL_GPIO_IsInputPinSet(TEMPERATURE_HUMIDITY_GPIO_Port, TEMPERATURE_HUMIDITY_Pin)) {
     }
-    uint32_t end_ticks = getCurrentUsTick();
+    uint32_t EndTicks = getCurrentUsTick();
 
-    uint32_t difference {end_ticks - start_ticks};
-    if (end_ticks < start_ticks) {
-        difference = std::numeric_limits<uint32_t>::max() - start_ticks +
-            end_ticks + 1;
+    uint32_t Difference {EndTicks - StartTicks};
+    if (EndTicks < StartTicks) {
+        Difference = std::numeric_limits<uint32_t>::max() - StartTicks +
+            EndTicks + 1;
     }
 
-    return difference;
+    return Difference;
 }
 
 int timeLowLevel() {
-    uint32_t start_ticks = getCurrentUsTick();
+    uint32_t StartTicks = getCurrentUsTick();
     while(!LL_GPIO_IsInputPinSet(TEMPERATURE_HUMIDITY_GPIO_Port, TEMPERATURE_HUMIDITY_Pin)) {
     }
-    uint32_t end_ticks = getCurrentUsTick();
+    uint32_t EndTicks = getCurrentUsTick();
 
-    uint32_t difference {end_ticks - start_ticks};
-    if (end_ticks < start_ticks) {
-        difference = std::numeric_limits<uint32_t>::max() - start_ticks +
-            end_ticks + 1;
+    uint32_t Difference {EndTicks - StartTicks};
+    if (EndTicks < StartTicks) {
+        Difference = std::numeric_limits<uint32_t>::max() - StartTicks +
+            EndTicks + 1;
     }
 
-    return difference;
+    return Difference;
 }
 
-HumTempReading read() {
+hum_temp_reading read() {
     constexpr bool INTERRUPT_MODE = false;
     constexpr int NUM_TOTAL_BITS = 5 * 8;
 
-    uint16_t humidity_bits {};
-    uint16_t temperature_bits {};
+    uint16_t HumidityBits {};
+    uint16_t TemperatureBits {};
 
     takeGpioAsOutput();
     LL_GPIO_ResetOutputPin(TEMPERATURE_HUMIDITY_GPIO_Port, TEMPERATURE_HUMIDITY_Pin);
 
     /* Start signal (line low) for at least 1 ms */
     /* maybe i can use the systick for this kind of delay */
-    constexpr int start_delay_ms = 20;
-    LL_mDelay(start_delay_ms);
+    constexpr int StartDelayMs = 20;
+    LL_mDelay(StartDelayMs);
 
     restartUsTick();
     letGpioToSensor(INTERRUPT_MODE);
 
     /* Should be ~20-40 us */
-    int timed_us = timeHighLevel();
+    int TimedUs = timeHighLevel();
 
     /* Should be aruond ~80 us */
-    timed_us = timeLowLevel();
-    timed_us = timeHighLevel();
+    TimedUs = timeLowLevel();
+    TimedUs = timeHighLevel();
 
-    int count_bits {};
-    while(count_bits < NUM_TOTAL_BITS) {
+    int CountBits {};
+    while(CountBits < NUM_TOTAL_BITS) {
         /*
          * every bit's transmission starts with low-voltage level that last 50
          * us
          */
-        int time_before_bit_value = timeLowLevel();
+        int TimeBeforeBitValue = timeLowLevel();
 
         /*
          * After the 50 us of low voltage, the duration of the next high signal
@@ -131,145 +131,145 @@ HumTempReading read() {
          * If the duration is ~26-28 us than it is low level,
          * if the duration is ~70us than the value is high.
          */
-        int time_for_bit = timeHighLevel();
-        int current_value = 0;
-        if (time_for_bit < 40) {
-            current_value = 0;
+        int TimeForBit = timeHighLevel();
+        int CurrentValue = 0;
+        if (TimeForBit < 40) {
+            CurrentValue = 0;
         } else {
-            current_value = 1;
+            CurrentValue = 1;
         }
 
-        if (count_bits < 16) {
-            humidity_bits |= (current_value << (15 - count_bits));
-        } else if (count_bits < 32) {
-            temperature_bits |= (current_value << (15 - (count_bits % 16)));
+        if (CountBits < 16) {
+            HumidityBits |= (CurrentValue << (15 - CountBits));
+        } else if (CountBits < 32) {
+            TemperatureBits |= (CurrentValue << (15 - (CountBits % 16)));
         }
-        ++count_bits;
+        ++CountBits;
     }
 
     constexpr uint32_t HIGH_BIT_HUMIDITY_MASK = 0x0000001100;
-    float humidity = humidity_bits / 10.0f;
-    float temperature = temperature_bits / 10.0f;
+    float Humidity = HumidityBits / 10.0f;
+    float Temperature = TemperatureBits / 10.0f;
 
-    return HumTempReading { humidity, temperature };
+    return hum_temp_reading { Humidity, Temperature };
 }
 
-static ReadStates state = WAITING_START;
-static int start_operation_us = 0;
-bool hum_temp_buffer[40] = {0};
-int current_bit = 0;
+static read_states State = WAITING_START;
+static int StartOperationUs = 0;
+bool HumTempBuffer[40] = {0};
+int CurrentBit = 0;
 
-void advanceStateMachine(bool value, uint32_t us) {
-    switch (state) {
+void advanceStateMachine(bool Value, uint32_t Us) {
+    switch (State) {
         case WAITING_START:
         {
-            if (value)
+            if (Value)
             {
-                state = ERROR;
+                State = ERROR;
             }
             else
             {
-                current_bit = 0;
-                start_operation_us = us;
-                state = START_HIGH;
+                CurrentBit = 0;
+                StartOperationUs = Us;
+                State = START_HIGH;
             }
         } break;
 
         case START_HIGH:
         {
-            if (!value)
+            if (!Value)
             {
-                state = ERROR;
+                State = ERROR;
             }
             else
             {
-                int us_passed = us - start_operation_us;
+                int UsPassed = Us - StartOperationUs;
 
-                if (us_passed >= 65 && us_passed <= 90)
+                if (UsPassed >= 65 && UsPassed <= 90)
                 {
-                    state = START_INFO_COMMUNICATION;
-                    start_operation_us = us;
+                    State = START_INFO_COMMUNICATION;
+                    StartOperationUs = Us;
                 }
                 else
                 {
-                    state = ERROR;
+                    State = ERROR;
                 }
             }
         } break;
 
         case START_INFO_COMMUNICATION:
         {
-            if (value)
+            if (Value)
             {
-                state = ERROR;
+                State = ERROR;
             }
             else
             {
-                int us_passed = us - start_operation_us;
-                if (us_passed >= 70 && us_passed <= 90)
+                int UsPassed = Us - StartOperationUs;
+                if (UsPassed >= 70 && UsPassed <= 90)
                 {
-                    start_operation_us = us;
-                    state = DECODE_DATA;
+                    StartOperationUs = Us;
+                    State = DECODE_DATA;
                 }
                 else
                 {
-                    state = ERROR;
+                    State = ERROR;
                 }
             }
         } break;
 
         case DECODE_DATA:
         {
-            if (!value)
+            if (!Value)
             {
-                state = ERROR;
+                State = ERROR;
             }
             else
             {
-                int us_passed = us - start_operation_us;
-                if (us_passed >= 20 && us_passed <= 30)
+                int UsPassed = Us - StartOperationUs;
+                if (UsPassed >= 20 && UsPassed <= 30)
                 {
-                    state = WAIT_DATA;
-                    hum_temp_buffer[current_bit++] = false;
+                    State = WAIT_DATA;
+                    HumTempBuffer[CurrentBit++] = false;
                 }
-                else if (us_passed >= 30 && us_passed <= 80)
+                else if (UsPassed >= 30 && UsPassed <= 80)
                 {
-                    state = WAIT_DATA;
-                    hum_temp_buffer[current_bit++] = true;
+                    State = WAIT_DATA;
+                    HumTempBuffer[CurrentBit++] = true;
                 }
                 else
                 {
-                    state = ERROR;
+                    State = ERROR;
                 }
-                start_operation_us = us;
+                StartOperationUs = Us;
 
-                if (current_bit == 37) {
-                    int c{};
+                if (CurrentBit == 37) {
+                    int C{};
                 }
-                if (current_bit == 40)
+                if (CurrentBit == 40)
                 {
-                    state = WAITING_START;
+                    State = WAITING_START;
                 }
             }
         } break;
 
         case WAIT_DATA:
         {
-            if (value)
+            if (Value)
             {
-                state = ERROR;
+                State = ERROR;
             }
             else
             {
-                int us_passed = us - start_operation_us;
-                if (us_passed >= 20 && us_passed <= 60)
+                int UsPassed = Us - StartOperationUs;
+                if (UsPassed >= 20 && UsPassed <= 60)
                 {
-                    state = DECODE_DATA;
-                    start_operation_us = us;
+                    State = DECODE_DATA;
+                    StartOperationUs = Us;
                 }
                 else
                 {
-                    state = ERROR;
+                    State = ERROR;
                 }
             }
         } break;

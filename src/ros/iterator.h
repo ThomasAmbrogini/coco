@@ -8,22 +8,22 @@ namespace ros {
 
 template<typename _T>
 struct remove_cv {
-    using Type = _T;
+    using type = _T;
 };
 
 template<typename _T>
 struct remove_cv<const _T> {
-    using Type = _T;
+    using type = _T;
 };
 
 template<typename _T>
 struct remove_cv<volatile _T> {
-    using Type = _T;
+    using type = _T;
 };
 
 template<typename _T>
 struct remove_cv<const volatile _T> {
-    using Type = _T;
+    using type = _T;
 };
 
 template<typename _T>
@@ -33,49 +33,49 @@ struct iterator_traits {
 
 template<typename _T>
 struct iterator_traits<_T*> {
-    using DifferenceType = ptrdiff_t;
-    using ValueType      = _T;
-    using Pointer        = ValueType*;
-    using Reference      = ValueType&;
+    using difference_type = ptrdiff_t;
+    using value_type      = _T;
+    using pointer         = value_type*;
+    using reference       = value_type&;
 };
 
 template<typename _It>
-class BoundedIterator {
+class bounded_iterator {
 public:
-    using IteratorType   = _It;
-    using ValueType      = iterator_traits<IteratorType>::ValueType;
-    using DifferenceType = iterator_traits<IteratorType>::DifferenceType;
-    using Pointer        = iterator_traits<IteratorType>::Pointer;
-    using Reference      = iterator_traits<IteratorType>::Reference;
+    using iterator_type   = _It;
+    using value_type      = iterator_traits<iterator_type>::value_type;
+    using difference_type = iterator_traits<iterator_type>::difference_type;
+    using pointer         = iterator_traits<iterator_type>::pointer;
+    using reference       = iterator_traits<iterator_type>::reference;
 
-    constexpr BoundedIterator(IteratorType current, IteratorType start, IteratorType end) : __current_(current),
-                                                                                            __start_(start),
-                                                                                            __end_(end) {
-        assert(__current_ >= __start_);
-        assert(__current_ < __end_);
+    constexpr bounded_iterator(iterator_type Current, iterator_type Start, iterator_type End) : Current_(Current),
+                                                                                                Start_(Start),
+                                                                                                End_(End) {
+        assert(Current_ >= Start_);
+        assert(Current_ < End_);
     }
 
-    constexpr BoundedIterator(IteratorType start, IteratorType end) : __current_(start),
-                                                                      __start_(start),
-                                                                      __end_(end) {
-        assert(__start_ < __end_);
+    constexpr bounded_iterator(iterator_type Start, iterator_type End) : Current_(Start),
+                                                                         Start_(Start),
+                                                                         End_(End) {
+        assert(Start_ < End_);
     }
 
-    constexpr BoundedIterator operator++() {
-        assert(__current_ != __end_);
-        ++__current_;
+    constexpr bounded_iterator operator++() {
+        assert(Current_ != End_);
+        ++Current_;
     }
 
-    constexpr Reference operator*() {
-        assert(__current_ != __end_);
-        *__current_;
+    constexpr reference operator*() {
+        assert(Current_ != End_);
+        *Current_;
     }
 
 private:
-    IteratorType __current_;
-    IteratorType __start_;
-    IteratorType __end_;
-    TypeDisplayer<Reference> type;
+    iterator_type Current_;
+    iterator_type Start_;
+    iterator_type End_;
+    type_displayer<reference> Type_;
 };
 
 } /* namespace ros */

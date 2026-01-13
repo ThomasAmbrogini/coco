@@ -7,15 +7,15 @@
 #ifdef __cplusplus
 namespace temp {
 #endif
-    struct HumTempReading {
-        float humidity;
-        float temperature;
+    struct hum_temp_reading {
+        float Humidity;
+        float Temperature;
     };
 
     void init();
-    HumTempReading read();
+    hum_temp_reading read();
 
-    void advanceStateMachine(bool value, uint32_t us);
+    void advanceStateMachine(bool Value, uint32_t Us);
 
 #ifdef __cplusplus
 

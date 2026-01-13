@@ -1,5 +1,5 @@
 #pragma once
 
 template<typename _T>
-struct TypeDisplayer;
+struct type_displayer;
 

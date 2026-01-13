@@ -5,8 +5,8 @@
 namespace print {
 namespace impl {
 
-void printr(ros::StringView msg) {
-    std::cout << msg.data() << std::endl;
+void printr(ros::string_view Msg) {
+    std::cout << Msg.data() << std::endl;
 }
 
 } /* namespace impl */
