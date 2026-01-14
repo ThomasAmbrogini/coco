@@ -1,11 +1,11 @@
 #pragma once
 
-#include "ros/string_view.h"
+#include "coco/string_view.h"
 
 namespace print {
 
 namespace impl {
-    void printr(ros::string_view Msg);
+    void printr(coco::string_view Msg);
 }
 
 enum struct level {
@@ -21,7 +21,7 @@ enum struct level {
 inline constexpr print::level PrintLevel {print::level::Info};
 
 template<print::level _Level>
-void printr(ros::string_view Msg) {
+void printr(coco::string_view Msg) {
     if constexpr (_Level >= PrintLevel) {
         print::impl::printr(Msg);
     }

@@ -1,7 +1,7 @@
 #include "drivers/uart/stm32_uart.h"
 #include "print/ring_buffer.h"
 #include "print/printr.h"
-#include "ros/string_view.h"
+#include "coco/string_view.h"
 
 namespace {
 
@@ -20,12 +20,12 @@ inline constexpr auto print_retrieve_log = print::retrieve_log<PrintDataSize, Pr
 
 namespace print::impl {
 
-void printr(ros::string_view Msg) {
+void printr(coco::string_view Msg) {
     print_store_log(SPrb, Msg);
 
     if (uart::impl::GInterruptDataMsg.size() == 0)
     {
-        ros::string_view Data {print_retrieve_log(SPrb)};
+        coco::string_view Data {print_retrieve_log(SPrb)};
         uart_write_interrupt(Data);
     }
 }
@@ -39,7 +39,7 @@ extern "C" void USART2_Handler() {
     const uint32_t ItTcEnabled       {LL_USART_IsEnabledIT_TC(USART2)};
 
     if (DataRegisterEmpty && ItTxeEnabled) {
-        const ros::string_view Data {uart::impl::GInterruptDataMsg};
+        const coco::string_view Data {uart::impl::GInterruptDataMsg};
 
         if (Data.size() > 0)
         {
@@ -59,7 +59,7 @@ extern "C" void USART2_Handler() {
         //TODO: another way to check this.
         if (SPrb.DescRing.HeadId != SPrb.DescRing.TailId)
         {
-            const ros::string_view Data {print_retrieve_log(SPrb)};
+            const coco::string_view Data {print_retrieve_log(SPrb)};
             uart_write_interrupt(Data);
             LL_USART_EnableIT_TXE(USART2);
         }

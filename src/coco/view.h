@@ -1,10 +1,10 @@
 #pragma once
 
 #include "assert.h"
-#include "ros/iterator.h"
-#include "ros/types.h"
+#include "coco/iterator.h"
+#include "coco/types.h"
 
-namespace ros {
+namespace coco {
 
 template<typename _T>
 class view {
@@ -64,5 +64,5 @@ protected:
     size_type Size_ {};
 };
 
-} /* namespace ros */
+} /* namespace coco */
 

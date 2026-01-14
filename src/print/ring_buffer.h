@@ -1,8 +1,8 @@
 #pragma once
 
 #include "assert.h"
-#include "ros/string_view.h"
-#include "ros/types.h"
+#include "coco/string_view.h"
+#include "coco/types.h"
 
 #include "time/time.h"
 
@@ -93,7 +93,7 @@ volatile uint32_t CountStores  = 0;
  *    just return.
  */
 template<int _DataSize, int _DescSize>
-constexpr int store_log(ring_buffer<_DataSize, _DescSize>& Rb, ros::string_view Data) {
+constexpr int store_log(ring_buffer<_DataSize, _DescSize>& Rb, coco::string_view Data) {
     static_assert(_DataSize > 0);
     static_assert(_DescSize > 0);
     assert(Data.data() != nullptr);
@@ -153,7 +153,7 @@ volatile uint32_t CountRetrieves {0};
  *         message otherwise.
  */
 template<int _DataSize, int _DescSize>
-ros::string_view retrieve_log(ring_buffer<_DataSize, _DescSize>& Rb) {
+coco::string_view retrieve_log(ring_buffer<_DataSize, _DescSize>& Rb) {
     static_assert(_DataSize > 0);
     static_assert(_DescSize > 0);
 
@@ -165,7 +165,7 @@ ros::string_view retrieve_log(ring_buffer<_DataSize, _DescSize>& Rb) {
     auto& DescRing {Rb.DescRing};
 
     if (DescRing.HeadId == DescRing.TailId) {
-        return ros::string_view{};
+        return coco::string_view{};
     }
 
     const int DescIdx {DescRing.HeadId};
@@ -176,7 +176,7 @@ ros::string_view retrieve_log(ring_buffer<_DataSize, _DescSize>& Rb) {
 
     DataRing.HeadLpos = NextLpos;
     ++DescRing.HeadId;
-    ros::string_view Ret {&DataRing.Data[modulo_idx(BeginLpos, Rb.DataSize)], Len};
+    coco::string_view Ret {&DataRing.Data[modulo_idx(BeginLpos, Rb.DataSize)], Len};
 
     __asm volatile ("" ::: "memory");
     volatile uint32_t EndTick = TIM2->CNT;

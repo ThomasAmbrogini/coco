@@ -15,7 +15,7 @@ consteval int consteval_strlen(const char* Str) {
     return Idx;
 }
 
-namespace ros {
+namespace coco {
 
 class string_view : public view<char> {
 public:
@@ -31,9 +31,9 @@ public:
     }
 };
 
-} /* namespace ros */
+} /* namespace coco */
 
-inline constexpr ros::string_view operator""_sv(const char* Str, size_t Len) noexcept {
-    return ros::string_view(Str, Len);
+inline constexpr coco::string_view operator""_sv(const char* Str, size_t Len) noexcept {
+    return coco::string_view(Str, Len);
 }
 

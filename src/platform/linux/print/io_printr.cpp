@@ -5,7 +5,7 @@
 namespace print {
 namespace impl {
 
-void printr(ros::string_view Msg) {
+void printr(coco::string_view Msg) {
     std::cout << Msg.data() << std::endl;
 }
 

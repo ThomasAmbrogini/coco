@@ -1,6 +1,6 @@
 target_sources(${PROJECT_NAME}
     PRIVATE
-        mcu/startup_${ROS_STM32_MICRO}.s
+        mcu/startup_${COCO_STM32_MICRO}.s
 
     PRIVATE
         drivers/clk/stm32_clock.cpp
@@ -30,6 +30,6 @@ target_link_libraries(${PROJECT_NAME}
 
 target_link_options(${PROJECT_NAME}
     PRIVATE
-        LINKER:-T${CMAKE_CURRENT_SOURCE_DIR}/linkerscript/${ROS_STM32_MICRO}.ld
+        LINKER:-T${CMAKE_CURRENT_SOURCE_DIR}/linkerscript/${COCO_STM32_MICRO}.ld
 )
 

@@ -1,10 +1,10 @@
 #pragma once
 
 #include "assert.h"
-#include "ros/types.h"
+#include "coco/types.h"
 #include "util/type_displayer.h"
 
-namespace ros {
+namespace coco {
 
 template<typename _T>
 struct remove_cv {
@@ -78,5 +78,5 @@ private:
     type_displayer<reference> Type_;
 };
 
-} /* namespace ros */
+} /* namespace coco */
 

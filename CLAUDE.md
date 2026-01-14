@@ -36,7 +36,7 @@ cmake --build build --config Debug
 
 - `src/platform/` - contains the code related to the platform on which it is running.
 - `src/print/` - Platform-agnostic logging via `printr_info()`, `printr_error()`, etc.
-- `src/ros/` - Custom types which are similar to standard library ones.
+- `src/coco/` - Custom types which are similar to standard library ones.
 - `src/util/` - Various utilities.
 
 #### Platform
@@ -55,13 +55,13 @@ cmake --build build --config Debug
 - Build uses `-fno-exceptions`, `-fno-rtti`, `-fno-threadsafe-statics`
 
 ### CMake Configuration
-- `ROS_PLATFORM`: Target platform (`linux` or `stm32`)
-- `ROS_STM32_MICRO`: STM32 variant (currently `stm32f411`)
+- `COCO_PLATFORM`: Target platform (`linux` or `stm32`)
+- `COCO_STM32_MICRO`: STM32 variant (currently `stm32f411`)
 
 ## Coding Conventions
 
 ### General
-- Namespace `ros::` for custom types used throughout the codebase
+- Namespace `coco::` for custom types used throughout the codebase
 - CMSIS and LL drivers are used directly (no HAL abstraction), with constexpr intermediate abstractions
 - C++23 features: `consteval`, `constexpr` constructors, concepts-ready
 

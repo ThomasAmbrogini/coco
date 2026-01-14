@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ros/string_view.h"
+#include "coco/string_view.h"
 #include "stm32_uart_types.h"
 #include "stm32_uart_utils.h"
 
@@ -11,7 +11,7 @@ namespace uart {
 
 namespace impl {
 
-inline ros::string_view GInterruptDataMsg {};
+inline coco::string_view GInterruptDataMsg {};
 
 } /* namespace impl */
 
@@ -73,7 +73,7 @@ void write(char FrameData) {
 //maybe it is better to have the frame_bits to be something global which is
 //used for the configuration and as parameter inside here.
 template<mode _Mode, instance _UsartInstance, frame_bits _FrameBits>
-void write(ros::string_view Data) {
+void write(coco::string_view Data) {
     if constexpr (_Mode == mode::Blocking) {
         //TODO: timeout which returns a fail if the write can not be done.
         for (int I = 0; I < Data.size(); ++I) {
