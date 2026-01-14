@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 Bare-metal C++23 firmware for creating an abstraction layer, without the
-operating system and which can support different boards, linux desktop.
+operating system and which can support different boards, linux desktop, etc.
 
 Right now it is only been developed the print function used for device logging.
 
