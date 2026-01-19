@@ -1,30 +1,12 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Project Overview
 
-Bare-metal C++23 firmware for creating an abstraction layer, without the
-operating system and which can support different boards, linux desktop, etc.
-
-Right now it is only been developed the print function used for device logging.
+C++23 hardware abstraction layer where the user is in charge of including the
+correct driver files.
 
 There is not standard library from C/C++ and some of the functionalities which
 can be useful can be reimplemented manually.
-
-## Build Commands
-
-### Linux (host testing)
-```bash
-# Build
-cmake --build build_linux --config Debug
-```
-
-### STM32 (cross-compile)
-```bash
-# Build
-cmake --build build --config Debug
-```
 
 ## Architecture
 

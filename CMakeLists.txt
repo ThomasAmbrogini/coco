@@ -21,5 +21,12 @@ set_interface_target_options(ProjectOptions)
 
 add_executable(${PROJECT_NAME})
 
+target_sources(${PROJECT_NAME}
+    PUBLIC
+        FILE_SET HEADERS
+        BASE_DIRS
+            include/
+)
+
 add_subdirectory(src)
 
