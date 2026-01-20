@@ -2,19 +2,25 @@
 
 #include "coco/types.h"
 #include "stm32f4_clk_types.h"
-#include "system_info.h"
-#include "system_types.h"
 #include "util/math.h"
 
 #include "vendor/st/ll/stm32f4xx_ll_rcc.h"
 
 #include <limits>
 
-#define AHB_PRESCALER(v) LL_RCC_SYSCLK_DIV_ ## v
-#define APB1_PRESCALER(v) LL_RCC_APB1_DIV_ ## v
-#define APB2_PRESCALER(v) LL_RCC_APB2_DIV_ ## v
-
 namespace clk {
+
+inline constexpr int MaxVCOFreqHz {2000000};
+inline constexpr int MinVCOFreqHz {1000000};
+
+inline constexpr int MinPLLM = 2;
+inline constexpr int MaxPLLM = 63;
+
+inline constexpr int MinPLLN = RCC_PLLN_MIN_VALUE;
+inline constexpr int MaxPLLN = RCC_PLLN_MAX_VALUE;
+
+inline constexpr int MinPLLP = 2;
+inline constexpr int MaxPLLP = 8;
 
 /**
  * @brief Convert the pllp actual value to value to write to the register.
@@ -35,18 +41,17 @@ static_assert(convert_pllp_reg_value(1 << RCC_PLLCFGR_PLLP_Pos) == 4);
 static_assert(convert_pllp_reg_value(2 << RCC_PLLCFGR_PLLP_Pos) == 6);
 static_assert(convert_pllp_reg_value(3 << RCC_PLLCFGR_PLLP_Pos) == 8);
 
-//TODO: the oscillator should be a variable.
-constexpr pll_params compute_pll_params(int DesiredFreqHz) {
+constexpr pll_params compute_pll_params(int ExternalOscFreqHz, int DesiredFreqHz) {
     pll_params Ret {};
-    constexpr int PllmStart {ExternalOscFreqHz / MaxVCOFreq};
-    constexpr int PllmEnd {ExternalOscFreqHz / MinVCOFreq};
+    int PllmStart {ExternalOscFreqHz / MaxVCOFreqHz};
+    int PllmEnd {ExternalOscFreqHz / MinVCOFreqHz};
 
     int MinErr = std::numeric_limits<int>::max();
     for (int Pllm = PllmStart; Pllm < PllmEnd; ++Pllm) {
-        int VcoFreq = round_to_closest_int(ExternalOscFreqHz, Pllm);
+        int VCOFreqHz = round_to_closest_int(ExternalOscFreqHz, Pllm);
         for (int Plln = MinPLLN; Plln < MaxPLLN; ++Plln) {
             for (int Pllp = MinPLLP; Pllp < MaxPLLP; Pllp+=2) {
-                int OutputFrequency = round_to_closest_int(VcoFreq * Plln, Pllp);
+                int OutputFrequency = round_to_closest_int(VCOFreqHz * Plln, Pllp);
                 if (OutputFrequency == DesiredFreqHz) {
                     return pll_params{Pllm, Plln, convert_pllp_to_reg_value(Pllp)};
                 }
@@ -64,26 +69,12 @@ constexpr pll_params compute_pll_params(int DesiredFreqHz) {
     return Ret;
 }
 
-constexpr int compute_frequency(pll_params PllParams) {
+constexpr int compute_frequency(int ExternalOscFreqHz, pll_params PllParams) {
     /*
      * output_frequency = vco_freq * plln / pllp;
      * vco_freq = input_freq / pllm;
      */
     return (ExternalOscFreqHz / PllParams.Pllm) * PllParams.Plln / convert_pllp_reg_value(PllParams.Pllp);
-}
-
-template<bus _Bus, clock_tree _ClockTree>
-consteval u32 get_prescaler() {
-    if constexpr (_Bus == bus::AHB) {
-        static constexpr int AHBDivider {_ClockTree.SysclockFreqHz / _ClockTree.AHBClockFreqHz};
-        return AHB_PRESCALER(AHBDivider);
-    } else if constexpr (_Bus == bus::APB1) {
-        static constexpr int APB1Divider {_ClockTree.SysclockFreqHz / _ClockTree.APB1ClockFreqHz};
-        return APB1_DIVIDER(APB1Divider);
-    } else if constexpr (_Bus == bus::APB2) {
-        static constexpr int APB2Divider {_ClockTree.SysclockFreqHz / _ClockTree.APB2ClockFreqHz};
-        return APB2_DIVIDER(APB2Divider);
-    }
 }
 
 template<bus _Bus, prescaler _Prescaler>
@@ -174,6 +165,20 @@ consteval u32 convert_prescaler() {
             default: {
             } break;
         }
+    }
+}
+
+template<bus _Bus, clock_tree _ClockTree>
+consteval u32 get_prescaler() {
+    if constexpr (_Bus == bus::AHB) {
+        static constexpr int AHBDivider {_ClockTree.SysclkFreqHz / _ClockTree.AHBFreqHz};
+        return convert_prescaler<_Bus, static_cast<prescaler>(AHBDivider)>();
+    } else if constexpr (_Bus == bus::APB1) {
+        static constexpr int APB1Divider {_ClockTree.SysclkFreqHz / _ClockTree.APB1FreqHz};
+        return convert_prescaler<_Bus, static_cast<prescaler>(APB1Divider)>();
+    } else if constexpr (_Bus == bus::APB2) {
+        static constexpr int APB2Divider {_ClockTree.SysclkFreqHz / _ClockTree.APB2FreqHz};
+        return convert_prescaler<_Bus, static_cast<prescaler>(APB2Divider)>();
     }
 }
 

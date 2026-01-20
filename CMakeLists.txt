@@ -19,14 +19,14 @@ set_interface_target_warnings(ProjectWarnings)
 add_library(ProjectOptions INTERFACE)
 set_interface_target_options(ProjectOptions)
 
-add_executable(${PROJECT_NAME})
+#add_executable(${PROJECT_NAME})
+#
+#target_sources(${PROJECT_NAME}
+#    PUBLIC
+#        FILE_SET HEADERS
+#        BASE_DIRS
+#            include/
+#)
 
-target_sources(${PROJECT_NAME}
-    PUBLIC
-        FILE_SET HEADERS
-        BASE_DIRS
-            include/
-)
-
-add_subdirectory(src)
+add_subdirectory(examples)
 

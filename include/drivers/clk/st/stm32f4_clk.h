@@ -19,7 +19,7 @@ namespace clk {
  */
 template<device_info _DeviceInfo>
 void clock_configuration() {
-    static constexpr int StartingCoreFreqHz {_DeviceInfo.ClockConfig.ClockTree.StartingCoreFreqHz};
+    static constexpr int StartingCoreFreqHz {HSI_VALUE};
     static constexpr clock_tree ClockTree {_DeviceInfo.ClockConfig.ClockTree};
 
     static constexpr bool AceleratingFreq {ClockTree.SysclkFreqHz > StartingCoreFreqHz};
@@ -31,17 +31,17 @@ void clock_configuration() {
         }
     }
 
-    if constexpr (_DeviceInfo.ClockConfiguration.ClockSource == clock_source::HSE) {
+    if constexpr (_DeviceInfo.ClockConfig.ClockSource == clock_source::HSE) {
         enable_HSE_switch_sys_clk();
-    } else if constexpr (_DeviceInfo.ClockConfiguration.ClockSource == clock_source::HSI) {
+    } else if constexpr (_DeviceInfo.ClockConfig.ClockSource == clock_source::HSI) {
         enable_HSI_switch_sys_clk();
-    } else if constexpr (_DeviceInfo.ClockConfiguration.ClockSource == clock_source::PLL_HSI) {
-        static constexpr pll_params Params {compute_pll_params(ClockTree.SysclkFreqHz)};
+    } else if constexpr (_DeviceInfo.ClockConfig.ClockSource == clock_source::PLL_HSI) {
+        static constexpr pll_params Params {compute_pll_params(_DeviceInfo.ClockConfig.ExternalClockFreqHz, ClockTree.SysclkFreqHz)};
 
         LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSI, Params.Pllm, Params.Plln, Params.Pllp);
         enable_PLL_switch_sys_clk();
-    } else if constexpr (_DeviceInfo.ClockConfiguration.ClockSource == clock_source::PLL_HSE) {
-        static constexpr pll_params Params {compute_pll_params(ClockTree.SysclkFreqHz)};
+    } else if constexpr (_DeviceInfo.ClockConfig.ClockSource == clock_source::PLL_HSE) {
+        static constexpr pll_params Params {compute_pll_params(_DeviceInfo.ClockConfig.ExternalClockFreqHz, ClockTree.SysclkFreqHz)};
 
         LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSE, Params.Pllm, Params.Plln, Params.Pllp);
 
@@ -67,8 +67,8 @@ void clock_configuration() {
     //the feature to fallback in case the HSE fails?
     //TODO: if i am using the pll with HSE as source, and the HSE fails, can i
     //use the PLL with the HSI?
-    if constexpr ((_DeviceInfo.ClockConfiguration.ClockSource != clock_source::HSI) &&
-                  (_DeviceInfo.ClockConfiguration.ClockSource != clock_source::PLL_HSI)) {
+    if constexpr ((_DeviceInfo.ClockConfig.ClockSource != clock_source::HSI) &&
+                  (_DeviceInfo.ClockConfig.ClockSource != clock_source::PLL_HSI)) {
         LL_RCC_HSI_Disable();
     }
 
