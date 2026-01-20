@@ -2,10 +2,14 @@
 
 namespace clk {
 
+//TODO: depends on the board.
 inline constexpr int ExternalOscFreqHz = 8000000;
+
 inline constexpr int InternalOscFreqHz = 16000000;
 
 inline constexpr int StartingCoreFreqHz = InternalOscFreqHz;
+
+//TODO: depends on the micro.
 inline constexpr int MaxCoreFreqHz      = 100000000;
 inline constexpr int MaxAHBFreqHz       = 100000000;
 inline constexpr int MaxAPB1FreqHz      = 50000000;

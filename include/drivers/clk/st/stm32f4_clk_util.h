@@ -1,13 +1,18 @@
 #pragma once
 
+#include "coco/types.h"
+#include "stm32f4_clk_types.h"
 #include "system_info.h"
 #include "system_types.h"
-#include "coco/types.h"
 #include "util/math.h"
 
 #include "vendor/st/ll/stm32f4xx_ll_rcc.h"
 
 #include <limits>
+
+#define AHB_PRESCALER(v) LL_RCC_SYSCLK_DIV_ ## v
+#define APB1_PRESCALER(v) LL_RCC_APB1_DIV_ ## v
+#define APB2_PRESCALER(v) LL_RCC_APB2_DIV_ ## v
 
 namespace clk {
 
@@ -65,6 +70,20 @@ constexpr int compute_frequency(pll_params PllParams) {
      * vco_freq = input_freq / pllm;
      */
     return (ExternalOscFreqHz / PllParams.Pllm) * PllParams.Plln / convert_pllp_reg_value(PllParams.Pllp);
+}
+
+template<bus _Bus, clock_tree _ClockTree>
+consteval u32 get_prescaler() {
+    if constexpr (_Bus == bus::AHB) {
+        static constexpr int AHBDivider {_ClockTree.SysclockFreqHz / _ClockTree.AHBClockFreqHz};
+        return AHB_PRESCALER(AHBDivider);
+    } else if constexpr (_Bus == bus::APB1) {
+        static constexpr int APB1Divider {_ClockTree.SysclockFreqHz / _ClockTree.APB1ClockFreqHz};
+        return APB1_DIVIDER(APB1Divider);
+    } else if constexpr (_Bus == bus::APB2) {
+        static constexpr int APB2Divider {_ClockTree.SysclockFreqHz / _ClockTree.APB2ClockFreqHz};
+        return APB2_DIVIDER(APB2Divider);
+    }
 }
 
 template<bus _Bus, prescaler _Prescaler>
