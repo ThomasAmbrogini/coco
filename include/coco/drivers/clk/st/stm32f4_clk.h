@@ -2,9 +2,9 @@
 
 #include "stm32f4_clk_types.h"
 #include "stm32f4_clk_util.h"
-#include "util/math.h"
+#include "coco/util/math.h"
+#include "coco/device/st/stm32f4_device.h"
 
-#include "device/st/stm32f4_device.h"
 #include "vendor/st/ll/stm32f4xx_ll_pwr.h"
 #include "vendor/st/ll/stm32f4xx_ll_system.h"
 
@@ -17,7 +17,7 @@ namespace clk {
  *    The system is supposed to be used statically and the frequency of the
  *    system is not supposed to change after initialization.
  */
-template<device_info _DeviceInfo>
+template<coco::device_info _DeviceInfo>
 void clock_configuration() {
     static constexpr int StartingCoreFreqHz {HSI_VALUE};
     static constexpr clock_tree ClockTree {_DeviceInfo.ClockConfig.ClockTree};

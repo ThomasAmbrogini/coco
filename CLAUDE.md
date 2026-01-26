@@ -11,34 +11,15 @@ can be useful can be reimplemented manually.
 ## Architecture
 
 - `cmake/` - utils file for cmake and toolchain files.
+- `include\` - contains the actual code that can be imported by the users.
 - `src/` - contains the source code.
+- `examples/` - contains some example code for some boards.
 - `env.sh` - bash utility which creates some aliases specific to the project.
-
-### Source
-
-- `src/platform/` - contains the code related to the platform on which it is running.
-- `src/print/` - Platform-agnostic logging via `printr_info()`, `printr_error()`, etc.
-- `src/coco/` - Custom types which are similar to standard library ones.
-- `src/util/` - Various utilities.
-
-#### Platform
-
-- `src/platform/linux/` - Linux host build for testing functionality on linux
-
-- `src/platform/stm32/` - STM32 bare-metal implementation
-  - `cmsis/` - ARM CMSIS-Core headers
-  - `f4/` - STM32F4 family code (startup, linker scripts, drivers)
-  - `f3/` - STM32F3 family code (startup, linker scripts, drivers)
-  - `libc/` - Minimal libc runtime support for bare-metal
 
 ### Key Components
 
 ## Project options
 - Build uses `-fno-exceptions`, `-fno-rtti`, `-fno-threadsafe-statics`
-
-### CMake Configuration
-- `COCO_PLATFORM`: Target platform (`linux` or `stm32`)
-- `COCO_STM32_MICRO`: STM32 variant (currently `stm32f411`)
 
 ## Coding Conventions
 

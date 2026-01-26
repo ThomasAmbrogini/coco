@@ -2,7 +2,7 @@
 
 #include "coco/types.h"
 #include "stm32f4_clk_types.h"
-#include "util/math.h"
+#include "coco/util/math.h"
 
 #include "vendor/st/ll/stm32f4xx_ll_rcc.h"
 

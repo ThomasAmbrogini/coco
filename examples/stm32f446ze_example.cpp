@@ -1,8 +1,8 @@
-#include "device/st/stm32f4_device.h"
-#include "drivers/clk/st/stm32f4_clk.h"
+#include "coco/device/st/stm32f4_device.h"
+#include "coco/drivers/clk/st/stm32f4_clk.h"
 
 int main() {
-    static constexpr device_info DeviceInfo {
+    static constexpr coco::device_info DeviceInfo {
         .ClockConfig {
             .ExternalClockFreqHz {8000000},
             .ClockTree {
