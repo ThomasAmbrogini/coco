@@ -7,6 +7,7 @@ target_sources(stm32f446ze_example
 
     PRIVATE
         stm32f446ze_example.cc
+        ${CMAKE_SOURCE_DIR}/src/startup/startup_stm32f4.s
 )
 
 target_compile_definitions(stm32f446ze_example
@@ -23,8 +24,8 @@ target_link_libraries(stm32f446ze_example
         ProjectOptions
 )
 
-#target_link_options(${PROJECT_NAME}
-#    PRIVATE
-#        LINKER:-T${CMAKE_CURRENT_SOURCE_DIR}/linkerscript/${COCO_STM32_MICRO}.ld
-#)
+target_link_options(stm32f446ze_example
+    PRIVATE
+        LINKER:-T${CMAKE_CURRENT_SOURCE_DIR}/stm32f446ze.ld
+)
 
