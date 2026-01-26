@@ -1,10 +1,10 @@
 #pragma once
 
 #include "assert.h"
-#include "coco/string_view.h"
-#include "coco/types.h"
+#include "coco/string_view.hh"
+#include "coco/types.hh"
 
-#include "time/time.h"
+#include "time/time.hh"
 
 //TODO: remove once the memcpy has been removed
 #include <string.h>

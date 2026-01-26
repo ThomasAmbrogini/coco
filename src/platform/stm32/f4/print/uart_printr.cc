@@ -1,7 +1,7 @@
 #include "drivers/uart/stm32_uart.h"
 #include "print/ring_buffer.h"
 #include "print/printr.h"
-#include "coco/string_view.h"
+#include "coco/string_view.hh"
 
 namespace {
 

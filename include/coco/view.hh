@@ -1,8 +1,8 @@
 #pragma once
 
 #include "assert.h"
-#include "coco/iterator.h"
-#include "coco/types.h"
+#include "coco/iterator.hh"
+#include "coco/types.hh"
 
 namespace coco {
 

@@ -1,8 +1,8 @@
 #include "drivers/clk/stm32_clock.h"
 #include "drivers/uart/stm32_uart.h"
 #include "print/printr.h"
-#include "coco/string_view.h"
-#include "time/time.h"
+#include "coco/string_view.hh"
+#include "time/time.hh"
 
 int main() {
     //TODO: what are the things which have to be absolutely powered at the

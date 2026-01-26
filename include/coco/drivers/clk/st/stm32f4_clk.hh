@@ -1,9 +1,9 @@
 #pragma once
 
-#include "stm32f4_clk_types.h"
-#include "stm32f4_clk_util.h"
-#include "coco/util/math.h"
-#include "coco/device/st/stm32f4_device.h"
+#include "stm32f4_clk_types.hh"
+#include "stm32f4_clk_util.hh"
+#include "coco/util/math.hh"
+#include "coco/device/st/stm32f4_device.hh"
 
 #include "vendor/st/ll/stm32f4xx_ll_pwr.h"
 #include "vendor/st/ll/stm32f4xx_ll_system.h"

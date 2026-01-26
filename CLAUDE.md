@@ -43,3 +43,13 @@ can be useful can be reimplemented manually.
 | Template value parameters | _PascalCase | `template<int _Size>` |
 | Enum values | PascalCase | `clock_source::PLL_HSE`, `level::Info` |
 | Inline constexpr variables | PascalCase | `PrintLevel`, `DesiredSysclkFreqHz` |
+
+### File Extensions
+
+| File Type | Extension | Notes |
+|-----------|-----------|-------|
+| C++ source | `.cc` | |
+| C++ header | `.hh` | Only for coco headers, not vendor/CMSIS |
+| C header | `.h` | Used for vendor headers (LL, CMSIS) |
+| Assembly | `.s` | Startup files |
+| Linker script | `.ld` | |

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "assert.h"
-#include "coco/types.h"
+#include "coco/types.hh"
 #include "util/type_displayer.h"
 
 namespace coco {

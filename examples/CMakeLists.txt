@@ -6,7 +6,7 @@ target_sources(stm32f446ze_example
         BASE_DIRS ${CMAKE_SOURCE_DIR}/include
 
     PRIVATE
-        stm32f446ze_example.cpp
+        stm32f446ze_example.cc
 )
 
 target_compile_definitions(stm32f446ze_example

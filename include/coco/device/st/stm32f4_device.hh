@@ -1,6 +1,6 @@
 #pragma once
 
-#include "coco/drivers/clk/st/stm32f4_clk_types.h"
+#include "coco/drivers/clk/st/stm32f4_clk_types.hh"
 
 namespace coco {
 

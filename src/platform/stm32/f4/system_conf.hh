@@ -1,6 +1,6 @@
 #pragma once
 
-#include "system_types.h"
+#include "system_types.hh"
 
 namespace clk {
 

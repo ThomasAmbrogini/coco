@@ -1,8 +1,8 @@
 #pragma once
 
-#include "coco/string_view.h"
-#include "stm32f4_uart_types.h"
-#include "stm32f4_uart_utils.h"
+#include "coco/string_view.hh"
+#include "stm32f4_uart_types.hh"
+#include "stm32f4_uart_utils.hh"
 
 #include "drivers/clk/st/stm32f4_clk.h"
 #include "vendor/st/ll/stm32f4xx_ll_usart.h"

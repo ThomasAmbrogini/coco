@@ -1,8 +1,8 @@
 #pragma once
 
-#include "coco/types.h"
-#include "stm32f4_clk_types.h"
-#include "coco/util/math.h"
+#include "coco/types.hh"
+#include "stm32f4_clk_types.hh"
+#include "coco/util/math.hh"
 
 #include "vendor/st/ll/stm32f4xx_ll_rcc.h"
 

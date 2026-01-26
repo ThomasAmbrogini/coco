@@ -1,6 +1,6 @@
 #pragma once
 
-#include "stm32f4_uart_types.h"
+#include "stm32f4_uart_types.hh"
 #include "util/limits.h"
 #include "util/math.h"
 
