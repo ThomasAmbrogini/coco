@@ -10,23 +10,10 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-include(project_warnings)
-include(project_options)
-
-add_library(ProjectWarnings INTERFACE)
-set_interface_target_warnings(ProjectWarnings)
-
-add_library(ProjectOptions INTERFACE)
-set_interface_target_options(ProjectOptions)
-
-#add_executable(${PROJECT_NAME})
-#
-#target_sources(${PROJECT_NAME}
-#    PUBLIC
-#        FILE_SET HEADERS
-#        BASE_DIRS
-#            include/
-#)
-
-add_subdirectory(examples)
+add_library(coco INTERFACE)
+target_sources(coco
+    INTERFACE
+        FILE_SET HEADERS
+        BASE_DIRS include/
+)
 
