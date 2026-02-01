@@ -1,10 +1,10 @@
 #pragma once
 
 #include "coco/string_view.hh"
+#include "coco/drivers/clk/st/stm32f4_clk.hh"
 #include "stm32f4_uart_types.hh"
 #include "stm32f4_uart_utils.hh"
 
-#include "drivers/clk/st/stm32f4_clk.h"
 #include "vendor/st/ll/stm32f4xx_ll_usart.h"
 
 namespace uart {
@@ -15,9 +15,7 @@ inline coco::string_view GInterruptDataMsg {};
 
 } /* namespace impl */
 
-//TODO: should i just pass the known values as template params?
-//maybe it is better than using them directly from the global value.
-template<instance _UsartInstance, mode _Mode>
+template<coco::device_info: _Device, instance _UsartInstance, mode _Mode>
 void configuration() {
     USART_TypeDef* UsartReg = convert_inst_to_real_periph<_UsartInstance>();
 
@@ -40,10 +38,12 @@ void configuration() {
         NVIC_SetPriority(USART2_IRQn, 5);
     }
 
+    //TODO: pass this through the configuration
     static constexpr int DesiredBaudRate {9600};
     //TODO: change the value for the divider and the baud rate and place them in a system file.
     //TODO: the value of the clock used depends on the peripheral.
-    static constexpr uint16_t BrrRegVal {compute_brr_val<DesiredBaudRate, clk::APB1FreqHz, 16>()};
+
+    static constexpr uint16_t BrrRegVal {compute_brr_val<DesiredBaudRate, _Device.ClockConfig.ClockTree.APB1FreqHz, 16>()};
     UsartReg->BRR = BrrRegVal;
 
     LL_USART_EnableDirectionTx(UsartReg);

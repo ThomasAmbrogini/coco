@@ -2,7 +2,6 @@
 
 #include "assert.h"
 #include "coco/types.hh"
-#include "util/type_displayer.h"
 
 namespace coco {
 
@@ -75,7 +74,6 @@ private:
     iterator_type Current_;
     iterator_type Start_;
     iterator_type End_;
-    type_displayer<reference> Type_;
 };
 
 } /* namespace coco */

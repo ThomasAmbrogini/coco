@@ -1,7 +1,7 @@
 #pragma once
 
 #include "assert.h"
-#include "view.h"
+#include "view.hh"
 
 #include <stddef.h>
 

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "stm32f4_uart_types.hh"
-#include "util/limits.h"
-#include "util/math.h"
+#include "coco/util/limits.hh"
+#include "coco/util/math.hh"
 
 #include "vendor/st/ll/stm32f4xx_ll_bus.h"
 #include "vendor/st/ll/stm32f4xx_ll_gpio.h"

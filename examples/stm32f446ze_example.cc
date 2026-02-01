@@ -1,5 +1,6 @@
 #include "coco/device/st/stm32f4_device.hh"
 #include "coco/drivers/clk/st/stm32f4_clk.hh"
+#include "coco/drivers/uart/st/stm32f4_uart.hh"
 
 int main() {
     static constexpr coco::device_info DeviceInfo {

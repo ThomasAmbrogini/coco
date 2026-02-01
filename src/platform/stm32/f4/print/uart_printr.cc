@@ -11,7 +11,7 @@ inline constexpr auto uart_write_interrupt = uart::write<uart::mode::Interrupt, 
 inline constexpr int PrintDataSize {10 * 1024};
 inline constexpr int PrintDescSize {64};
 using print_ring_buffer = print::ring_buffer<PrintDataSize, PrintDescSize>;
-print_ring_buffer SPrb {};
+print_ring_buffer StaticPrb {};
 
 inline constexpr auto print_store_log = print::store_log<PrintDataSize, PrintDescSize>;
 inline constexpr auto print_retrieve_log = print::retrieve_log<PrintDataSize, PrintDescSize>;
@@ -21,11 +21,11 @@ inline constexpr auto print_retrieve_log = print::retrieve_log<PrintDataSize, Pr
 namespace print::impl {
 
 void printr(coco::string_view Msg) {
-    print_store_log(SPrb, Msg);
+    print_store_log(StaticPrb, Msg);
 
     if (uart::impl::GInterruptDataMsg.size() == 0)
     {
-        coco::string_view Data {print_retrieve_log(SPrb)};
+        coco::string_view Data {print_retrieve_log(StaticPrb)};
         uart_write_interrupt(Data);
     }
 }
@@ -57,9 +57,9 @@ extern "C" void USART2_Handler() {
 
     if (TransmissionComp && ItTcEnabled) {
         //TODO: another way to check this.
-        if (SPrb.DescRing.HeadId != SPrb.DescRing.TailId)
+        if (StaticPrb.DescRing.HeadId != StaticPrb.DescRing.TailId)
         {
-            const coco::string_view Data {print_retrieve_log(SPrb)};
+            const coco::string_view Data {print_retrieve_log(StaticPrb)};
             uart_write_interrupt(Data);
             LL_USART_EnableIT_TXE(USART2);
         }
