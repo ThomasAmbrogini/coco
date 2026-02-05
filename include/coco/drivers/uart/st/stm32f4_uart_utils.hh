@@ -44,26 +44,5 @@ static_assert(compute_brr_val<115200, 16000000, 16>() == compute_brr_val<8.6875f
 static_assert(compute_brr_val<460800, 8000000, 16>() == compute_brr_val<1.0625f>());
 static_assert(compute_brr_val<115200, 100000000, 16>() == compute_brr_val<54.253472f>());
 
-template<instance _UsartInstance>
-void gpio_pin_configuration() {
-    if constexpr (_UsartInstance == instance::_2) {
-        LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOA);
-        LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_2, LL_GPIO_MODE_ALTERNATE);
-        LL_GPIO_SetAFPin_0_7(GPIOA, LL_GPIO_PIN_2, LL_GPIO_AF_7);
-    } else {
-        static_assert(false, "Implement GPIO configuration for usart instance");
-    }
-}
-
-//TODO: do I want this function to reside in the clock module?
-template<instance _UsartInstance>
-inline void enable_clock() {
-    if constexpr (_UsartInstance == instance::_2) {
-        LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_USART2);
-    } else {
-        static_assert(false, "Implement clock enable for the periph");
-    }
-}
-
 } /* namespace uart */
 

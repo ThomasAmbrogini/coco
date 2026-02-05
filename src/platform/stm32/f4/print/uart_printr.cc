@@ -5,8 +5,7 @@
 
 namespace {
 
-inline constexpr auto uart_write_blocking = uart::write<uart::mode::Blocking, uart::instance::_2, uart::frame_bits::_8>;
-inline constexpr auto uart_write_interrupt = uart::write<uart::mode::Interrupt, uart::instance::_2, uart::frame_bits::_8>;
+inline constexpr auto uart_log_write = uart::write_interrupt<uart::instance::_2, uart::data_bits::_8>;
 
 inline constexpr int PrintDataSize {10 * 1024};
 inline constexpr int PrintDescSize {64};
@@ -26,7 +25,7 @@ void printr(coco::string_view Msg) {
     if (uart::impl::GInterruptDataMsg.size() == 0)
     {
         coco::string_view Data {print_retrieve_log(StaticPrb)};
-        uart_write_interrupt(Data);
+        uart_log_write(Data);
     }
 }
 
@@ -44,7 +43,7 @@ extern "C" void USART2_Handler() {
         if (Data.size() > 0)
         {
             //TODO: get a method to take the char.
-            uart::write<uart::instance::_2, uart::frame_bits::_8>(Data.data()[0]);
+            uart::write<uart::instance::_2, uart::data_bits::_8>(Data.data()[0]);
         }
 
         uart::impl::GInterruptDataMsg.drop_first();
@@ -60,7 +59,7 @@ extern "C" void USART2_Handler() {
         if (StaticPrb.DescRing.HeadId != StaticPrb.DescRing.TailId)
         {
             const coco::string_view Data {print_retrieve_log(StaticPrb)};
-            uart_write_interrupt(Data);
+            uart_log_write(Data);
             LL_USART_EnableIT_TXE(USART2);
         }
 

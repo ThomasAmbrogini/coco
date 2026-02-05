@@ -2,21 +2,20 @@
 
 namespace uart {
 
-enum class mode {
-    Blocking,
-    Interrupt,
-    DMA,
-};
-
 enum class instance {
     _1,
     _2,
     _6,
 };
 
-enum class frame_bits {
+enum class data_bits {
     _8,
     _9,
+};
+
+enum class stop_bits {
+    _1,
+    _2,
 };
 
 } /* namespace uart */
