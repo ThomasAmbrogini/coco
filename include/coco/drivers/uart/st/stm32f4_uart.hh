@@ -26,7 +26,7 @@ inline void enable_clock() {
 }
 
 template<instance _UsartInstance>
-void enable() {
+void enable_peripheral() {
     USART_TypeDef* UsartReg = convert_inst_to_real_periph<_UsartInstance>();
     LL_USART_Enable(UsartReg);
 }

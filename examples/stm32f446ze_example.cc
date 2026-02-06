@@ -2,16 +2,16 @@
 #include "coco/drivers/clk/st/stm32f4_clk.hh"
 #include "coco/drivers/uart/st/stm32f4_uart.hh"
 
-namespace uart {
-
 template<int _PeriphFreqHz>
-void configuration() {
-    static constexpr instance UsartInstance = uart::instance::_2;
-    enable_clock<UsartInstance>();
-    gpio_pin_configuration<UsartInstance>();
-    enable<UsartInstance>();
-    set_data_bits<UsartInstance, data_bits::_8>();
-    set_stop_bits<UsartInstance, stop_bits::_1>();
+void uart_configuration() {
+    static constexpr uart::instance UsartInstance = uart::instance::_2;
+
+    uart::enable_clock<UsartInstance>();
+    //TODO: I want this out of the uart namespace and into the GPIO (or pin) one.
+    uart::gpio_pin_configuration<UsartInstance>();
+    uart::enable_peripheral<UsartInstance>();
+    uart::set_data_bits<UsartInstance, uart::data_bits::_8>();
+    uart::set_stop_bits<UsartInstance, uart::stop_bits::_1>();
 
     //TODO: 4.Select DMA enable (DMAT) in USART_CR3 if Multi buffer Communication is to take
     //place. Configure the DMA register as explained in multibuffer communication.
@@ -25,11 +25,9 @@ void configuration() {
     //TODO: change the value for the divider and the baud rate and place them in a system file.
     //TODO: the value of the clock used depends on the peripheral.
 
-    set_baudrate<UsartInstance, DesiredBaudRate, _PeriphFreqHz, 16>();
-    enable_tx<UsartInstance>();
+    uart::set_baudrate<UsartInstance, DesiredBaudRate, _PeriphFreqHz, 16>();
+    uart::enable_tx<UsartInstance>();
 }
-
-} /* namespace uart */
 
 int main() {
     static constexpr coco::device_info DeviceInfo {
@@ -48,6 +46,6 @@ int main() {
     clk::clock_configuration<DeviceInfo>();
 
     //TODO: this should be chosen based on the instance.
-    uart::configuration<DeviceInfo.ClockConfig.ClockTree.APB1FreqHz>();
+    uart_configuration<DeviceInfo.ClockConfig.ClockTree.APB1FreqHz>();
 }
 
