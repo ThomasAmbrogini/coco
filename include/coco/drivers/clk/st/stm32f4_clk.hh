@@ -8,9 +8,48 @@
 #include "vendor/st/ll/stm32f4xx_ll_pwr.h"
 #include "vendor/st/ll/stm32f4xx_ll_system.h"
 
+#include "board_config.hh"
+
 #include <limits>
 
 namespace clk {
+
+namespace detail {
+
+template<clock_config _ClockConfig>
+constexpr clock_tree compute_actual_clock_tree() {
+    static constexpr clock_tree ClockTree {_ClockConfig.ClockTree};
+
+    if constexpr (_ClockConfig.ClockSource == clock_source::PLL_HSE) {
+        static constexpr pll_params Params {compute_pll_params(_ClockConfig.ExternalClockFreqHz, ClockTree.SysclkFreqHz)};
+        static constexpr int SysclkFreqHz {compute_frequency(_ClockConfig.ExternalClockFreqHz, Params)};
+
+        return clock_tree {
+            .SysclkFreqHz { SysclkFreqHz },
+            //TODO: take the prescaler based on the desired frequency for the bus.
+            .AHBFreqHz { SysclkFreqHz },
+            //TODO: take the prescaler based on the desired frequency for the bus.
+            .APB1FreqHz {1},
+            //TODO: take the prescaler based on the desired frequency for the bus.
+            .APB2FreqHz {1},
+        };
+    } else if constexpr (_ClockConfig.ClockSource == clock_source::PLL_HSI) {
+        static constexpr pll_params Params {compute_pll_params(HSI_VALUE, ClockTree.SysclkFreqHz)};
+        //TODO: implement.
+        return clock_tree {};
+    } else {
+        static_assert(false, "Yet to implement");
+    }
+}
+
+template<clock_config _ClockConfig = GlobalDeviceInfo.ClockConfig>
+struct clock {
+    static constexpr clock_config ClockConfig {_ClockConfig};
+    static constexpr clock_tree DesiredClockTree_ {_ClockConfig.ClockTree};
+    static constexpr clock_tree ActualClockTree_ {compute_actual_clock_tree<ClockConfig>()};
+};
+
+} /* namespace detail */
 
 /**
  * @details

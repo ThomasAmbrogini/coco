@@ -4,6 +4,10 @@ target_sources(stm32f446ze_example
     PRIVATE
         stm32f446ze_example.cc
         ${CMAKE_SOURCE_DIR}/startup/startup_stm32f4.s
+
+    PRIVATE
+    FILE_SET HEADERS
+    BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/
 )
 
 target_compile_definitions(stm32f446ze_example

@@ -1,6 +1,6 @@
-#include "coco/device/st/stm32f4_device.hh"
 #include "coco/drivers/clk/st/stm32f4_clk.hh"
 #include "coco/drivers/uart/st/stm32f4_uart.hh"
+#include "board_config.hh"
 
 template<int _PeriphFreqHz>
 void uart_configuration() {
@@ -30,22 +30,11 @@ void uart_configuration() {
 }
 
 int main() {
-    static constexpr coco::device_info DeviceInfo {
-        .ClockConfig {
-            .ExternalClockFreqHz {8000000},
-            .ClockTree {
-                .SysclkFreqHz {100000000},
-                .AHBFreqHz {100000000},
-                .APB1FreqHz {50000000},
-                .APB2FreqHz {100000000},
-            },
-            .ClockSource { clk::clock_source::PLL_HSE },
-        },
-    };
+    constexpr clk::clock_tree clk_info {clk::detail::clock<>::ActualClockTree_};
 
-    clk::clock_configuration<DeviceInfo>();
+    clk::clock_configuration<GlobalDeviceInfo>();
 
     //TODO: this should be chosen based on the instance.
-    uart_configuration<DeviceInfo.ClockConfig.ClockTree.APB1FreqHz>();
+    uart_configuration<GlobalDeviceInfo.ClockConfig.ClockTree.APB1FreqHz>();
 }
 
