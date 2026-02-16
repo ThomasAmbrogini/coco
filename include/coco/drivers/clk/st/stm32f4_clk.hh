@@ -14,7 +14,7 @@
 
 namespace clk {
 
-namespace detail {
+namespace impl {
 
 template<clock_config _ClockConfig>
 constexpr clock_tree compute_actual_clock_tree() {
@@ -41,14 +41,14 @@ constexpr clock_tree compute_actual_clock_tree() {
 }
 
 struct clock {
-    static constexpr clock_config ClockConfig {GlobalDeviceInfo.ClockConfig};
-    static constexpr clock_tree DesiredClockTree_ {GlobalDeviceInfo.ClockConfig.ClockTree};
+    static constexpr clock_config ClockConfig {config::GlobalDeviceInfo.ClockConfig};
+    static constexpr clock_tree DesiredClockTree_ {config::GlobalDeviceInfo.ClockConfig.ClockTree};
     static constexpr clock_tree ActualClockTree_ {compute_actual_clock_tree<ClockConfig>()};
 };
 
-} /* namespace detail */
+} /* namespace impl */
 
-inline constexpr clock_tree ClockTree = detail::clock::ActualClockTree_;
+inline constexpr clock_tree ClockTree = impl::clock::ActualClockTree_;
 
 /**
  * @details
@@ -56,8 +56,8 @@ inline constexpr clock_tree ClockTree = detail::clock::ActualClockTree_;
  *    system is not supposed to change after initialization.
  */
 void clock_configuration() {
-    static constexpr int StartingCoreFreqHz {GlobalDeviceInfo.ClockConfig.InternalClockFreqHz};
-    static constexpr clock_tree ClockTree {GlobalDeviceInfo.ClockConfig.ClockTree};
+    static constexpr int StartingCoreFreqHz {config::GlobalDeviceInfo.ClockConfig.InternalClockFreqHz};
+    static constexpr clock_tree ClockTree {config::GlobalDeviceInfo.ClockConfig.ClockTree};
 
     static constexpr bool AceleratingFreq {ClockTree.SysclkFreqHz > StartingCoreFreqHz};
     if constexpr (AceleratingFreq) {
@@ -68,17 +68,17 @@ void clock_configuration() {
         }
     }
 
-    if constexpr (GlobalDeviceInfo.ClockConfig.ClockSource == clock_source::HSE) {
+    if constexpr (config::GlobalDeviceInfo.ClockConfig.ClockSource == clock_source::HSE) {
         enable_HSE_switch_sys_clk();
-    } else if constexpr (GlobalDeviceInfo.ClockConfig.ClockSource == clock_source::HSI) {
+    } else if constexpr (config::GlobalDeviceInfo.ClockConfig.ClockSource == clock_source::HSI) {
         enable_HSI_switch_sys_clk();
-    } else if constexpr (GlobalDeviceInfo.ClockConfig.ClockSource == clock_source::PLL_HSI) {
-        static constexpr pll_params Params {compute_pll_params(GlobalDeviceInfo.ClockConfig.ExternalClockFreqHz, ClockTree.SysclkFreqHz)};
+    } else if constexpr (config::GlobalDeviceInfo.ClockConfig.ClockSource == clock_source::PLL_HSI) {
+        static constexpr pll_params Params {compute_pll_params(config::GlobalDeviceInfo.ClockConfig.ExternalClockFreqHz, ClockTree.SysclkFreqHz)};
 
         LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSI, Params.Pllm, Params.Plln, Params.Pllp);
         enable_PLL_switch_sys_clk();
-    } else if constexpr (GlobalDeviceInfo.ClockConfig.ClockSource == clock_source::PLL_HSE) {
-        static constexpr pll_params Params {compute_pll_params(GlobalDeviceInfo.ClockConfig.ExternalClockFreqHz, ClockTree.SysclkFreqHz)};
+    } else if constexpr (config::GlobalDeviceInfo.ClockConfig.ClockSource == clock_source::PLL_HSE) {
+        static constexpr pll_params Params {compute_pll_params(config::GlobalDeviceInfo.ClockConfig.ExternalClockFreqHz, ClockTree.SysclkFreqHz)};
 
         LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSE, Params.Pllm, Params.Plln, Params.Pllp);
 
@@ -104,8 +104,8 @@ void clock_configuration() {
     //the feature to fallback in case the HSE fails?
     //TODO: if i am using the pll with HSE as source, and the HSE fails, can i
     //use the PLL with the HSI?
-    if constexpr ((GlobalDeviceInfo.ClockConfig.ClockSource != clock_source::HSI) &&
-                  (GlobalDeviceInfo.ClockConfig.ClockSource != clock_source::PLL_HSI)) {
+    if constexpr ((config::GlobalDeviceInfo.ClockConfig.ClockSource != clock_source::HSI) &&
+                  (config::GlobalDeviceInfo.ClockConfig.ClockSource != clock_source::PLL_HSI)) {
         LL_RCC_HSI_Disable();
     }
 

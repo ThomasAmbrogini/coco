@@ -1,6 +1,5 @@
 #include "coco/drivers/clk/st/stm32f4_clk.hh"
 #include "coco/drivers/uart/st/stm32f4_uart.hh"
-#include "board_config.hh"
 
 void uart_configuration() {
     static constexpr uart::instance UsartInstance = uart::instance::_2;

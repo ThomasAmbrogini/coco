@@ -4,6 +4,8 @@
 
 #include "vendor/st/ll/stm32f4xx_ll_rcc.h"
 
+namespace config {
+
 inline constexpr coco::device_info GlobalDeviceInfo {
     .ClockConfig {
         .ExternalClockFreqHz {8000000},
@@ -17,3 +19,6 @@ inline constexpr coco::device_info GlobalDeviceInfo {
         .ClockSource { clk::clock_source::PLL_HSE },
     },
 };
+
+} /* namespace config */
+
