@@ -1,5 +1,6 @@
 #include "coco/drivers/clk/st/stm32f4_clk.hh"
 #include "coco/drivers/uart/st/stm32f4_uart.hh"
+#include "coco/print/printr.hh"
 
 void uart_configuration() {
     static constexpr uart::instance UsartInstance = uart::instance::_2;
@@ -32,5 +33,7 @@ int main() {
 
     //TODO: this should be chosen based on the instance.
     uart_configuration();
+
+    printr_info("hello");
 }
 

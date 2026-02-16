@@ -18,6 +18,7 @@ enum struct level {
 } /* namespace print */
 
 //TODO: in some configuration file.
+//TODO: maybe the device config?
 inline constexpr print::level PrintLevel {print::level::Info};
 
 template<print::level _Level>
