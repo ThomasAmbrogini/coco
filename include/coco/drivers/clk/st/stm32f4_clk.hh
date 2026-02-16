@@ -25,16 +25,14 @@ constexpr clock_tree compute_actual_clock_tree() {
         static constexpr int SysclkFreqHz {compute_frequency(_ClockConfig.ExternalClockFreqHz, Params)};
 
         return clock_tree {
-            .SysclkFreqHz { SysclkFreqHz },
-            //TODO: take the prescaler based on the desired frequency for the bus.
-            .AHBFreqHz { SysclkFreqHz },
-            //TODO: take the prescaler based on the desired frequency for the bus.
-            .APB1FreqHz {1},
-            //TODO: take the prescaler based on the desired frequency for the bus.
-            .APB2FreqHz {1},
+            .SysclkFreqHz {SysclkFreqHz},
+            .AHBFreqHz {SysclkFreqHz / _ClockConfig.ClockTree.APB1FreqHz},
+            .APB1FreqHz {SysclkFreqHz / _ClockConfig.ClockTree.APB1FreqHz},
+            .APB2FreqHz {SysclkFreqHz / _ClockConfig.ClockTree.APB2FreqHz},
         };
     } else if constexpr (_ClockConfig.ClockSource == clock_source::PLL_HSI) {
-        static constexpr pll_params Params {compute_pll_params(HSI_VALUE, ClockTree.SysclkFreqHz)};
+        static_assert(false, "Yet to implement");
+        static constexpr pll_params Params {compute_pll_params(_ClockConfig.InternalClockFreqHz, ClockTree.SysclkFreqHz)};
         //TODO: implement.
         return clock_tree {};
     } else {
@@ -51,6 +49,8 @@ struct clock {
 
 } /* namespace detail */
 
+inline constexpr clock_tree ClockTree = detail::clock<>::ActualClockTree_;
+
 /**
  * @details
  *    The system is supposed to be used statically and the frequency of the
@@ -58,7 +58,7 @@ struct clock {
  */
 template<coco::device_info _DeviceInfo>
 void clock_configuration() {
-    static constexpr int StartingCoreFreqHz {HSI_VALUE};
+    static constexpr int StartingCoreFreqHz {_DeviceInfo.ClockConfig.InternalClockFreqHz};
     static constexpr clock_tree ClockTree {_DeviceInfo.ClockConfig.ClockTree};
 
     static constexpr bool AceleratingFreq {ClockTree.SysclkFreqHz > StartingCoreFreqHz};
@@ -118,8 +118,6 @@ void clock_configuration() {
         while(LL_FLASH_GetLatency()!= NumWaitStates) {
         }
     }
-
-    //TODO: Clock security system.
 }
 
 //TODO: I want to be able to know the frequeuncy of all the buses. (maybe even

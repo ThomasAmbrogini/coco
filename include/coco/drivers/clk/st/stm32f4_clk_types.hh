@@ -18,6 +18,7 @@ struct clock_tree {
 
 struct clock_config {
     int ExternalClockFreqHz;
+    int InternalClockFreqHz;
     clock_tree ClockTree;
     clock_source ClockSource;
 };

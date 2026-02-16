@@ -2,9 +2,12 @@
 
 #include "coco/device/st/stm32f4_device.hh"
 
+#include "vendor/st/ll/stm32f4xx_ll_rcc.h"
+
 inline constexpr coco::device_info GlobalDeviceInfo {
     .ClockConfig {
         .ExternalClockFreqHz {8000000},
+        .InternalClockFreqHz {HSI_VALUE},
         .ClockTree {
             .SysclkFreqHz {100000000},
             .AHBFreqHz {100000000},

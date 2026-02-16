@@ -30,8 +30,6 @@ void uart_configuration() {
 }
 
 int main() {
-    constexpr clk::clock_tree clk_info {clk::detail::clock<>::ActualClockTree_};
-
     clk::clock_configuration<GlobalDeviceInfo>();
 
     //TODO: this should be chosen based on the instance.
