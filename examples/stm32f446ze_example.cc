@@ -2,7 +2,6 @@
 #include "coco/drivers/uart/st/stm32f4_uart.hh"
 #include "board_config.hh"
 
-template<int _PeriphFreqHz>
 void uart_configuration() {
     static constexpr uart::instance UsartInstance = uart::instance::_2;
 
@@ -25,14 +24,14 @@ void uart_configuration() {
     //TODO: change the value for the divider and the baud rate and place them in a system file.
     //TODO: the value of the clock used depends on the peripheral.
 
-    uart::set_baudrate<UsartInstance, DesiredBaudRate, _PeriphFreqHz, 16>();
+    uart::set_baudrate<UsartInstance, DesiredBaudRate, clk::ClockTree.AHBFreqHz, 16>();
     uart::enable_tx<UsartInstance>();
 }
 
 int main() {
-    clk::clock_configuration<GlobalDeviceInfo>();
+    clk::clock_configuration();
 
     //TODO: this should be chosen based on the instance.
-    uart_configuration<GlobalDeviceInfo.ClockConfig.ClockTree.APB1FreqHz>();
+    uart_configuration();
 }
 
