@@ -17,18 +17,16 @@ target_compile_definitions(stm32f446ze_example
         STM32F446xx
 )
 
-target_compile_options(stm32f446ze_example
-    PRIVATE
-        -fno-rtti
-        -fno-exceptions
-)
-
 target_link_libraries(stm32f446ze_example
     PRIVATE
         $<$<CXX_COMPILER_ID:GNU>:gcc>
 
     PRIVATE
         coco
+
+    PRIVATE
+        options
+        warnings
 )
 
 target_link_options(stm32f446ze_example

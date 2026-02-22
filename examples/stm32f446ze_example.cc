@@ -24,7 +24,7 @@ void uart_configuration() {
     //TODO: change the value for the divider and the baud rate and place them in a system file.
     //TODO: the value of the clock used depends on the peripheral.
 
-    uart::set_baudrate<UsartInstance, DesiredBaudRate, clk::ClockTree.AHBFreqHz, 16>();
+    uart::set_baudrate<UsartInstance, DesiredBaudRate, clk::GlobalClockTree.AHBFreqHz, 16>();
     uart::enable_tx<UsartInstance>();
 }
 

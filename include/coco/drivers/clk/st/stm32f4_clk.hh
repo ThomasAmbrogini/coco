@@ -48,14 +48,14 @@ struct clock {
 
 } /* namespace impl */
 
-inline constexpr clock_tree ClockTree = impl::clock::ActualClockTree_;
+inline constexpr clock_tree GlobalClockTree = impl::clock::ActualClockTree_;
 
 /**
  * @details
  *    The system is supposed to be used statically and the frequency of the
  *    system is not supposed to change after initialization.
  */
-void clock_configuration() {
+inline void clock_configuration() {
     static constexpr int StartingCoreFreqHz {config::GlobalDeviceInfo.ClockConfig.InternalClockFreqHz};
     static constexpr clock_tree ClockTree {config::GlobalDeviceInfo.ClockConfig.ClockTree};
 
