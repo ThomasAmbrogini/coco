@@ -18,5 +18,10 @@ enum class stop_bits {
     _2,
 };
 
+struct uart_config {
+    data_bits DataBits;
+    stop_bits StopBits;
+};
+
 } /* namespace uart */
 

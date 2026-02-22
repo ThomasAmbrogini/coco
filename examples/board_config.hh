@@ -18,6 +18,16 @@ inline constexpr coco::device_info GlobalDeviceInfo {
         },
         .ClockSource { clk::clock_source::PLL_HSE },
     },
+    .UartConfig {
+        {
+        },
+        {
+            .DataBits {uart::data_bits::_8},
+            .StopBits {uart::stop_bits::_1},
+        },
+        {
+        },
+    },
 };
 
 } /* namespace config */

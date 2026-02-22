@@ -9,7 +9,9 @@ void uart_configuration() {
     //TODO: I want this out of the uart namespace and into the GPIO (or pin) one.
     uart::gpio_pin_configuration<UsartInstance>();
     uart::enable_peripheral<UsartInstance>();
+    //TODO: make this info into a global config option
     uart::set_data_bits<UsartInstance, uart::data_bits::_8>();
+    //TODO: make this info into a global config option
     uart::set_stop_bits<UsartInstance, uart::stop_bits::_1>();
 
     //TODO: 4.Select DMA enable (DMAT) in USART_CR3 if Multi buffer Communication is to take
