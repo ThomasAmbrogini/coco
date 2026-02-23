@@ -8,7 +8,7 @@ namespace print {
 
 namespace impl {
     void printr(coco::string_view Msg) {
-        static constexpr uart::instance PrintUartInstance {uart::instance::_2};
+        static constexpr uart::instance PrintUartInstance {uart::instance::_3};
         static constexpr uart::uart_config UartConfig {config::GlobalDeviceInfo.UartConfig[static_cast<int>(PrintUartInstance)]};
         uart::write_blocking<PrintUartInstance, UartConfig.DataBits>(Msg);
     }

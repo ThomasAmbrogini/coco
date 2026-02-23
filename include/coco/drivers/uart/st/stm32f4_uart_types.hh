@@ -5,6 +5,7 @@ namespace uart {
 enum class instance {
     _1,
     _2,
+    _3,
     _6,
 };
 

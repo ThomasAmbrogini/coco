@@ -20,6 +20,8 @@ template<instance _UsartInstance>
 inline void enable_clock() {
     if constexpr (_UsartInstance == instance::_2) {
         LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_USART2);
+    } else if constexpr (_UsartInstance == instance::_3) {
+        LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_USART3);
     } else {
         static_assert(false, "Implement clock enable for the periph");
     }
@@ -31,6 +33,7 @@ void enable_peripheral() {
     LL_USART_Enable(UsartReg);
 }
 
+//TODO: this actually changes between different boards. It definitely has to go away.
 //TODO: move this thing to the gpio file.
 template<instance _UsartInstance>
 void gpio_pin_configuration() {
@@ -38,6 +41,10 @@ void gpio_pin_configuration() {
         LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOA);
         LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_2, LL_GPIO_MODE_ALTERNATE);
         LL_GPIO_SetAFPin_0_7(GPIOA, LL_GPIO_PIN_2, LL_GPIO_AF_7);
+    } else if constexpr (_UsartInstance == instance::_3) {
+        LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOD);
+        LL_GPIO_SetPinMode(GPIOD, LL_GPIO_PIN_8, LL_GPIO_MODE_ALTERNATE);
+        LL_GPIO_SetAFPin_8_15(GPIOD, LL_GPIO_PIN_8, LL_GPIO_AF_7);
     } else {
         static_assert(false, "Implement GPIO configuration for usart instance");
     }
@@ -124,7 +131,7 @@ template<instance _UsartInstance>
 void wait_end_transmission() {
     USART_TypeDef* UsartReg = convert_inst_to_real_periph<_UsartInstance>();
 
-    while (LL_USART_IsActiveFlag_TC(UsartReg)) {
+    while (!LL_USART_IsActiveFlag_TC(UsartReg)) {
     }
 }
 

@@ -3,7 +3,7 @@
 #include "coco/print/printr.hh"
 
 void uart_configuration() {
-    static constexpr uart::instance UsartInstance = uart::instance::_2;
+    static constexpr uart::instance UsartInstance = uart::instance::_3;
 
     uart::enable_clock<UsartInstance>();
     //TODO: I want this out of the uart namespace and into the GPIO (or pin) one.
@@ -17,16 +17,16 @@ void uart_configuration() {
     //TODO: 4.Select DMA enable (DMAT) in USART_CR3 if Multi buffer Communication is to take
     //place. Configure the DMA register as explained in multibuffer communication.
 
-    NVIC_EnableIRQ(USART2_IRQn);
+    //NVIC_EnableIRQ(USART2_IRQn);
     //TODO: what priority for the interrupt?
-    NVIC_SetPriority(USART2_IRQn, 5);
+    //NVIC_SetPriority(USART2_IRQn, 5);
 
     //TODO: pass this through the configuration
     static constexpr int DesiredBaudRate {9600};
     //TODO: change the value for the divider and the baud rate and place them in a system file.
     //TODO: the value of the clock used depends on the peripheral.
 
-    uart::set_baudrate<UsartInstance, DesiredBaudRate, clk::GlobalClockTree.AHBFreqHz, 16>();
+    uart::set_baudrate<UsartInstance, DesiredBaudRate, clk::GlobalClockTree.APB1FreqHz, 16>();
     uart::enable_tx<UsartInstance>();
 }
 
@@ -37,5 +37,8 @@ int main() {
     uart_configuration();
 
     printr_info("hello");
+
+    while(true) {
+    }
 }
 

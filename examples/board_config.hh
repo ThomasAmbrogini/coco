@@ -22,10 +22,10 @@ inline constexpr coco::device_info GlobalDeviceInfo {
         {
         },
         {
-            .DataBits {uart::data_bits::_8},
-            .StopBits {uart::stop_bits::_1},
         },
         {
+            .DataBits {uart::data_bits::_8},
+            .StopBits {uart::stop_bits::_1},
         },
     },
 };

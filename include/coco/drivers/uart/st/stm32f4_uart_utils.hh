@@ -14,6 +14,8 @@ template<instance _UsartInstance>
 constexpr USART_TypeDef* convert_inst_to_real_periph() {
     if constexpr (_UsartInstance == instance::_2) {
         return USART2;
+    } else if constexpr (_UsartInstance == instance::_3) {
+        return USART3;
     } else {
         static_assert(false, "Implement things for other peripherals");
     }
