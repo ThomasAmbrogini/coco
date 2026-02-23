@@ -24,11 +24,14 @@ constexpr clock_tree compute_actual_clock_tree() {
         static constexpr pll_params Params {compute_pll_params(_ClockConfig.ExternalClockFreqHz, ClockTree.SysclkFreqHz)};
         static constexpr int SysclkFreqHz {compute_frequency(_ClockConfig.ExternalClockFreqHz, Params)};
 
+        prescaler AHBPrescaler {SysclkFreqHz / _ClockConfig.ClockTree.AHBFreqHz};
+        prescaler APB1Prescaler {SysclkFreqHz / _ClockConfig.ClockTree.APB1FreqHz};
+        prescaler APB2Prescaler {SysclkFreqHz / _ClockConfig.ClockTree.APB2FreqHz};
         return clock_tree {
             .SysclkFreqHz {SysclkFreqHz},
-            .AHBFreqHz {SysclkFreqHz / _ClockConfig.ClockTree.APB1FreqHz},
-            .APB1FreqHz {SysclkFreqHz / _ClockConfig.ClockTree.APB1FreqHz},
-            .APB2FreqHz {SysclkFreqHz / _ClockConfig.ClockTree.APB2FreqHz},
+            .AHBFreqHz {SysclkFreqHz / static_cast<int>(AHBPrescaler)},
+            .APB1FreqHz {SysclkFreqHz / static_cast<int>(APB1Prescaler)},
+            .APB2FreqHz {SysclkFreqHz / static_cast<int>(APB2Prescaler)},
         };
     } else if constexpr (_ClockConfig.ClockSource == clock_source::PLL_HSI) {
         static_assert(false, "Yet to implement");
