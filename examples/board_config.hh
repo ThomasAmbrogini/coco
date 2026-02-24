@@ -26,6 +26,7 @@ inline constexpr coco::device_info GlobalDeviceInfo {
         {
             .DataBits {uart::data_bits::_8},
             .StopBits {uart::stop_bits::_1},
+            .DesiredBaudRate {9600},
         },
     },
 };

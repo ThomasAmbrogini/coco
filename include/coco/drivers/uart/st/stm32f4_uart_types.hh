@@ -22,6 +22,7 @@ enum class stop_bits {
 struct uart_config {
     data_bits DataBits;
     stop_bits StopBits;
+    int DesiredBaudRate;
 };
 
 } /* namespace uart */
