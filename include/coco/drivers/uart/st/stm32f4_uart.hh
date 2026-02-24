@@ -11,6 +11,7 @@ namespace uart {
 
 namespace impl {
 
+//TODO: remove this thing.
 inline coco::string_view GInterruptDataMsg {};
 
 } /* namespace impl */
@@ -31,23 +32,6 @@ template<instance _UsartInstance>
 void enable_peripheral() {
     USART_TypeDef* UsartReg = convert_inst_to_real_periph<_UsartInstance>();
     LL_USART_Enable(UsartReg);
-}
-
-//TODO: this actually changes between different boards. It definitely has to go away.
-//TODO: move this thing to the gpio file.
-template<instance _UsartInstance>
-void gpio_pin_configuration() {
-    if constexpr (_UsartInstance == instance::_2) {
-        LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOA);
-        LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_2, LL_GPIO_MODE_ALTERNATE);
-        LL_GPIO_SetAFPin_0_7(GPIOA, LL_GPIO_PIN_2, LL_GPIO_AF_7);
-    } else if constexpr (_UsartInstance == instance::_3) {
-        LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOD);
-        LL_GPIO_SetPinMode(GPIOD, LL_GPIO_PIN_8, LL_GPIO_MODE_ALTERNATE);
-        LL_GPIO_SetAFPin_8_15(GPIOD, LL_GPIO_PIN_8, LL_GPIO_AF_7);
-    } else {
-        static_assert(false, "Implement GPIO configuration for usart instance");
-    }
 }
 
 //TODO: i do not know if passing the framebits is the right move, because it

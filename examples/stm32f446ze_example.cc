@@ -2,17 +2,30 @@
 #include "coco/drivers/uart/st/stm32f4_uart.hh"
 #include "coco/print/printr.hh"
 
+namespace uart {
+
+template<instance _UsartInstance>
+void gpio_pin_configuration() {
+    if constexpr (_UsartInstance == instance::_3) {
+        LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOD);
+        LL_GPIO_SetPinMode(GPIOD, LL_GPIO_PIN_8, LL_GPIO_MODE_ALTERNATE);
+        LL_GPIO_SetAFPin_8_15(GPIOD, LL_GPIO_PIN_8, LL_GPIO_AF_7);
+    } else {
+        static_assert(false, "Implement GPIO configuration for usart instance");
+    }
+}
+
 void uart_configuration() {
     static constexpr uart::instance UsartInstance = uart::instance::_3;
 
-    uart::enable_clock<UsartInstance>();
+    enable_clock<UsartInstance>();
     //TODO: I want this out of the uart namespace and into the GPIO (or pin) one.
-    uart::gpio_pin_configuration<UsartInstance>();
-    uart::enable_peripheral<UsartInstance>();
+    gpio_pin_configuration<UsartInstance>();
+    enable_peripheral<UsartInstance>();
     //TODO: make this info into a global config option
-    uart::set_data_bits<UsartInstance, uart::data_bits::_8>();
+    set_data_bits<UsartInstance, data_bits::_8>();
     //TODO: make this info into a global config option
-    uart::set_stop_bits<UsartInstance, uart::stop_bits::_1>();
+    set_stop_bits<UsartInstance, stop_bits::_1>();
 
     //TODO: 4.Select DMA enable (DMAT) in USART_CR3 if Multi buffer Communication is to take
     //place. Configure the DMA register as explained in multibuffer communication.
@@ -26,15 +39,17 @@ void uart_configuration() {
     //TODO: change the value for the divider and the baud rate and place them in a system file.
     //TODO: the value of the clock used depends on the peripheral.
 
-    uart::set_baudrate<UsartInstance, DesiredBaudRate, clk::GlobalClockTree.APB1FreqHz, 16>();
-    uart::enable_tx<UsartInstance>();
+    set_baudrate<UsartInstance, DesiredBaudRate, clk::GlobalClockTree.APB1FreqHz, 16>();
+    enable_tx<UsartInstance>();
+}
+
 }
 
 int main() {
     clk::clock_configuration();
 
     //TODO: this should be chosen based on the instance.
-    uart_configuration();
+    uart::uart_configuration();
 
     printr_info("hello");
 
